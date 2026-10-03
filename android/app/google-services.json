@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "532150151046",
+    "project_id": "activity-8-advance-web",
+    "storage_bucket": "activity-8-advance-web.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:532150151046:android:09c107f33d1a5703162e07",
+        "android_client_info": {
+          "package_name": "com.example.cooperative_member_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAw0yLAy2x5W6e2vbMf5q8e6cvbgPq3rSs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
