@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/routing/app_router.dart';
@@ -14,6 +15,9 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    // Force sign out to ensure the app always starts at the login page
+    // as requested (clearing any cached admin/member sessions).
+    await FirebaseAuth.instance.signOut();
   } catch (e) {
     if (!e.toString().contains('duplicate-app')) {
       app = MaterialApp(

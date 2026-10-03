@@ -26,14 +26,14 @@ class MemberListTab extends ConsumerWidget {
               final member = members[index];
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: member.photoUrl != null ? NetworkImage(member.photoUrl!) : null,
-                  child: member.photoUrl == null ? const Icon(Icons.person) : null,
+                  backgroundImage: (member.photoUrl != null && member.photoUrl!.isNotEmpty) ? NetworkImage(member.photoUrl!) : null,
+                  child: (member.photoUrl == null || member.photoUrl!.isEmpty) ? const Icon(Icons.person) : null,
                 ),
                 title: Text('${member.firstName} ${member.lastName}'),
                 subtitle: Text(member.accountNumber),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
-                  // TODO: Navigate to member details
+                  context.go('/admin/member-details/${member.id}');
                 },
               );
             },

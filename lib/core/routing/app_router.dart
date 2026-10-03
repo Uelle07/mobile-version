@@ -6,6 +6,7 @@ import '../../screens/login_screen.dart';
 import '../../screens/register_screen.dart';
 import '../../features/admin/dashboard/admin_dashboard_screen.dart';
 import '../../features/admin/members/views/add_member_screen.dart';
+import '../../features/admin/members/views/member_details_screen.dart';
 import '../../features/admin/surveys/views/survey_overview_screen.dart';
 import '../../features/admin/surveys/views/survey_details_screen.dart';
 import '../../features/member/dashboard/member_dashboard_screen.dart';
@@ -54,6 +55,13 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: 'add-member',
             builder: (context, state) => const AddMemberScreen(),
+          ),
+          GoRoute(
+            path: 'member-details/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return MemberDetailsScreen(memberId: id);
+            },
           ),
           GoRoute(
             path: 'surveys',

@@ -16,8 +16,16 @@ class MemberRepository {
 
   CollectionReference<Member> get _membersRef =>
       _firestore.collection('member').withConverter<Member>(
-            fromFirestore: (snapshot, _) =>
-                Member.fromJson({...snapshot.data()!, 'id': snapshot.id}),
+            fromFirestore: (snapshot, _) {
+              final data = snapshot.data() ?? {};
+              if (!data.containsKey('passport_photo') || data['passport_photo'] == null) {
+                data['passport_photo'] = data['photoUrl'] ?? data['photo_url'] ?? data['photo'] ?? data['profilePic'];
+              }
+              if (!data.containsKey('signature_photo') || data['signature_photo'] == null) {
+                data['signature_photo'] = data['signatureUrl'] ?? data['signature_url'] ?? data['signature'];
+              }
+              return Member.fromJson({...data, 'id': snapshot.id});
+            },
             toFirestore: (member, _) {
               final json = member.toJson();
               json.remove('id');
