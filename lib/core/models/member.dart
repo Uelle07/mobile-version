@@ -13,12 +13,25 @@ abstract class Member with _$Member {
     @JsonKey(name: 'lastname') required String lastName,
     @JsonKey(name: 'middlename') String? middleName,
     String? email,
-    String? phone,
-    String? photoUrl,
-    String? signatureUrl,
-    @Default(false) bool isVerified,
-    // Add other fields as necessary (demographics, etc)
-    @JsonKey(fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
+    @JsonKey(name: 'contact_number') String? phone,
+    @JsonKey(name: 'passport_photo') String? photoUrl,
+    @JsonKey(name: 'signature_photo') String? signatureUrl,
+    @JsonKey(name: 'is_verified') @Default(false) bool isVerified,
+    @JsonKey(name: 'account_status') @Default('Active') String status,
+    @JsonKey(name: 'civil_status') String? civilStatus,
+    @JsonKey(name: 'sex') String? gender,
+    @JsonKey(name: 'birthday', fromJson: _dateStringFromJson, toJson: _dateStringToJson) String? dateOfBirth,
+    String? nationality,
+    @JsonKey(name: 'address') String? homeAddress,
+    String? occupation,
+    @JsonKey(name: 'employer') String? employerName,
+    @JsonKey(name: 'employer_address') String? employerAddress,
+    @JsonKey(name: 'father_name') String? fatherName,
+    @JsonKey(name: 'mother_name') String? motherName,
+    @JsonKey(name: 'spouse_name') String? spouseName,
+    @JsonKey(name: 'spouse_occupation') String? spouseOccupation,
+    @JsonKey(name: 'spouse_employer') String? spouseEmployer,
+    @JsonKey(name: 'created_at', fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
     DateTime? registeredAt,
   }) = _Member;
 
@@ -27,3 +40,15 @@ abstract class Member with _$Member {
 
 DateTime? _dateTimeFromTimestamp(Timestamp? timestamp) => timestamp?.toDate();
 Timestamp? _dateTimeToTimestamp(DateTime? dateTime) => dateTime == null ? null : Timestamp.fromDate(dateTime);
+
+String? _dateStringFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is String) return value;
+  if (value is Timestamp) {
+    final date = value.toDate();
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+  return value.toString();
+}
+
+dynamic _dateStringToJson(String? value) => value;
