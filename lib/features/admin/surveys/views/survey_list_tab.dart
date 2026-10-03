@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -96,44 +97,11 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
   }
 
   Widget _buildStatsCards({required int total, required int active, required int respondents, required int drafts}) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _StatCard(
-            title: 'TOTAL SURVEYS',
-            value: total.toString(),
-            subtitle: 'All registered surveys',
-            icon: Icons.bar_chart,
-            iconColor: Colors.blue,
-            borderColor: Colors.blue.withValues(alpha: 0.5),
-          ),
-          _StatCard(
-            title: 'ACTIVE SURVEYS',
-            value: active.toString(),
-            subtitle: 'Open to members',
-            icon: Icons.podcasts,
-            iconColor: Colors.greenAccent,
-            borderColor: Colors.greenAccent.withValues(alpha: 0.5),
-          ),
-          _StatCard(
-            title: 'TOTAL RESPONDENTS',
-            value: respondents.toString(),
-            subtitle: 'Unique submissions',
-            icon: Icons.people,
-            iconColor: Colors.purpleAccent,
-            borderColor: Colors.purpleAccent.withValues(alpha: 0.5),
-          ),
-          _StatCard(
-            title: 'DRAFT / INACTIVE',
-            value: drafts.toString(),
-            subtitle: 'Unpublished / Closed',
-            icon: Icons.insert_drive_file,
-            iconColor: Colors.orangeAccent,
-            borderColor: Colors.orangeAccent.withValues(alpha: 0.5),
-          ),
-        ],
-      ),
+    return _StatsCarousel(
+      total: total,
+      active: active,
+      respondents: respondents,
+      drafts: drafts,
     );
   }
 
@@ -177,49 +145,63 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
   }
 
   Widget _buildMainTable(List<Survey> surveys, WidgetRef ref, BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E213A),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10)
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          headingTextStyle: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12),
-          dataTextStyle: const TextStyle(color: Colors.white),
-          columnSpacing: 30,
-          columns: const [
-            DataColumn(label: Text('SURVEY TITLE')),
-            DataColumn(label: Text('STATUS')),
-            DataColumn(label: Text('SCHEDULE DATES')),
-            DataColumn(label: Text('QUESTIONS')),
-            DataColumn(label: Text('RESPONDENTS')),
-            DataColumn(label: Text('ACTIONS')),
-          ],
-          rows: surveys.map((s) => DataRow(
-            cells: [
-              DataCell(Text(s.title, style: const TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(_buildStatusChip(s.status)),
-              DataCell(_buildSchedule(s.startDate, s.endDate)),
-              DataCell(_buildBadge(Icons.list, s.questionsCount.toString(), Colors.blue)),
-              DataCell(_buildBadge(Icons.people, s.respondentsCount.toString(), Colors.purple)),
-              DataCell(Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _ActionButton(icon: Icons.list_alt, color: Colors.teal, onTap: () => context.push('/admin/surveys/${s.id}')),
-                  _ActionButton(icon: Icons.bar_chart, color: Colors.blue, onTap: () {}),
-                  _ActionButton(icon: Icons.edit, color: Colors.purple, onTap: () {}),
-                  _ActionButton(icon: Icons.delete, color: Colors.red, onTap: () {
-                     ref.read(surveyRepositoryProvider).deleteSurvey(s.id);
-                  }),
-                ],
-              )),
-            ]
-          )).toList(),
+    if (surveys.isEmpty) {
+      return const Center(child: Text('No surveys found.', style: TextStyle(color: Colors.white54)));
+    }
+    return Column(
+      children: surveys.map((s) => Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E213A),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white10),
         ),
-      ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    s.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                _buildStatusChip(s.status),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSchedule(s.startDate, s.endDate),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    _buildBadge(Icons.list, '${s.questionsCount}', Colors.blue),
+                    const SizedBox(width: 8),
+                    _buildBadge(Icons.people, '${s.respondentsCount}', Colors.purple),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ActionButton(icon: Icons.list_alt, color: Colors.teal, onTap: () => context.push('/admin/surveys/${s.id}')),
+                    _ActionButton(icon: Icons.bar_chart, color: Colors.blue, onTap: () {}),
+                    _ActionButton(icon: Icons.edit, color: Colors.purple, onTap: () {}),
+                    _ActionButton(icon: Icons.delete, color: Colors.red, onTap: () {
+                       ref.read(surveyRepositoryProvider).deleteSurvey(s.id);
+                    }),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      )).toList(),
     );
   }
 
@@ -240,40 +222,51 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
         const SizedBox(height: 16),
         _buildSearchBar(), // Reusing search bar style for layout mirroring
         const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E213A),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white10)
+        if (surveys.isEmpty)
+          const Center(child: Text('No surveys found.', style: TextStyle(color: Colors.white54)))
+        else
+          Column(
+            children: surveys.map((s) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E213A),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Code: ${s.id.length > 8 ? s.id.substring(0, 8) : s.id}', 
+                        style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold, fontSize: 12)
+                      ),
+                      _buildStatusChip(s.status),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    s.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSchedule(s.startDate, s.endDate),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      _buildBadge(Icons.list, '${s.questionsCount} Questions', Colors.teal),
+                      const SizedBox(width: 12),
+                      _buildBadge(Icons.people, '${s.respondentsCount} Submissions', Colors.purpleAccent),
+                    ],
+                  ),
+                ],
+              ),
+            )).toList(),
           ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              headingTextStyle: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12),
-              dataTextStyle: const TextStyle(color: Colors.white),
-              columnSpacing: 40,
-              columns: const [
-                DataColumn(label: Text('SURVEY CODE')),
-                DataColumn(label: Text('SURVEY TITLE')),
-                DataColumn(label: Text('STATUS')),
-                DataColumn(label: Text('SCHEDULE WINDOW')),
-                DataColumn(label: Text('QUESTIONS')),
-                DataColumn(label: Text('SUBMISSIONS')),
-              ],
-              rows: surveys.map((s) => DataRow(
-                cells: [
-                  DataCell(Text(s.id.length > 8 ? s.id.substring(0, 8) : s.id, style: const TextStyle(color: Colors.pinkAccent))),
-                  DataCell(Text(s.title, style: const TextStyle(fontWeight: FontWeight.bold))),
-                  DataCell(_buildStatusChip(s.status)),
-                  DataCell(_buildSchedule(s.startDate, s.endDate)),
-                  DataCell(Text(s.questionsCount.toString(), style: const TextStyle(color: Colors.teal))),
-                  DataCell(Text(s.respondentsCount.toString(), style: const TextStyle(color: Colors.purpleAccent))),
-                ]
-              )).toList(),
-            ),
-          ),
-        )
       ],
     );
   }
@@ -393,6 +386,125 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
   }
 }
 
+class _StatsCarousel extends StatefulWidget {
+  final int total;
+  final int active;
+  final int respondents;
+  final int drafts;
+
+  const _StatsCarousel({
+    required this.total,
+    required this.active,
+    required this.respondents,
+    required this.drafts,
+  });
+
+  @override
+  State<_StatsCarousel> createState() => _StatsCarouselState();
+}
+
+class _StatsCarouselState extends State<_StatsCarousel> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      if (!mounted) return;
+      if (_currentPage < 3) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeIn,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 125,
+          child: PageView(
+            controller: _pageController,
+            onPageChanged: (int page) {
+              setState(() {
+                _currentPage = page;
+              });
+            },
+            children: [
+              _StatCard(
+                title: 'TOTAL SURVEYS',
+                value: widget.total.toString(),
+                subtitle: 'All registered surveys',
+                icon: Icons.bar_chart,
+                iconColor: Colors.blue,
+                borderColor: Colors.blue.withValues(alpha: 0.5),
+              ),
+              _StatCard(
+                title: 'ACTIVE SURVEYS',
+                value: widget.active.toString(),
+                subtitle: 'Open to members',
+                icon: Icons.podcasts,
+                iconColor: Colors.greenAccent,
+                borderColor: Colors.greenAccent.withValues(alpha: 0.5),
+              ),
+              _StatCard(
+                title: 'TOTAL RESPONDENTS',
+                value: widget.respondents.toString(),
+                subtitle: 'Unique submissions',
+                icon: Icons.people,
+                iconColor: Colors.purpleAccent,
+                borderColor: Colors.purpleAccent.withValues(alpha: 0.5),
+              ),
+              _StatCard(
+                title: 'DRAFT / INACTIVE',
+                value: widget.drafts.toString(),
+                subtitle: 'Unpublished / Closed',
+                icon: Icons.insert_drive_file,
+                iconColor: Colors.orangeAccent,
+                borderColor: Colors.orangeAccent.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(4, (index) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 8,
+              width: _currentPage == index ? 24 : 8,
+              decoration: BoxDecoration(
+                color: _currentPage == index ? Colors.white : Colors.white38,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
 class _StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -413,8 +525,8 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 220,
-      margin: const EdgeInsets.only(right: 16),
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1E213A),
