@@ -418,7 +418,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             bottom: 24,
             right: 24,
             child: FloatingActionButton(
-              backgroundColor: const Color(0xFF4A0072).withOpacity(0.8),
+              backgroundColor: _isAtBottom
+                  ? const Color(0xFF4A0072).withOpacity(0.8)
+                  : Colors.white,
               onPressed: () {
                 if (_isAtBottom) {
                   _scrollController.animateTo(
@@ -436,7 +438,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
               child: Icon(
                 _isAtBottom ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                color: Colors.white,
+                color: _isAtBottom ? Colors.white : const Color(0xFF4A0072),
                 size: 32,
               ),
             ),
