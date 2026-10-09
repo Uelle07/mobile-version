@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../admin/surveys/providers/survey_provider.dart';
+import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
 class MemberSurveyListTab extends ConsumerWidget {
   const MemberSurveyListTab({super.key});
@@ -10,18 +11,20 @@ class MemberSurveyListTab extends ConsumerWidget {
     final surveysAsync = ref.watch(surveysProvider);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: SpaceAppBar(
         title: const Text('Available Surveys'),
         automaticallyImplyLeading: false,
       ),
       body: surveysAsync.when(
         data: (surveys) {
-          final activeSurveys = surveys.where((s) => s.status == 'active' || s.status == 'published').toList();
-          
+          final activeSurveys = surveys
+              .where((s) => s.status == 'active' || s.status == 'published')
+              .toList();
+
           if (activeSurveys.isEmpty) {
             return const Center(child: Text('No active surveys available.'));
           }
-          
+
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: activeSurveys.length,
@@ -32,7 +35,10 @@ class MemberSurveyListTab extends ConsumerWidget {
                 margin: const EdgeInsets.only(bottom: 16),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
-                  title: Text(survey.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    survey.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(survey.description),

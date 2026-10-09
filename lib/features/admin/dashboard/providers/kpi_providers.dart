@@ -5,7 +5,10 @@ part 'kpi_providers.g.dart';
 
 @riverpod
 Stream<int> totalMembersCount(Ref ref) {
-  return FirebaseFirestore.instance.collection('member').snapshots().map((snapshot) => snapshot.docs.length);
+  return FirebaseFirestore.instance
+      .collection('member')
+      .snapshots()
+      .map((snapshot) => snapshot.docs.length);
 }
 
 @riverpod
@@ -21,10 +24,13 @@ Stream<int> activeSurveysCount(Ref ref) {
 Stream<int> newAccountsTodayCount(Ref ref) {
   final today = DateTime.now();
   final startOfDay = DateTime(today.year, today.month, today.day);
-  
+
   return FirebaseFirestore.instance
       .collection('member')
-      .where('registeredAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+      .where(
+        'registeredAt',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+      )
       .snapshots()
       .map((snapshot) => snapshot.docs.length);
 }

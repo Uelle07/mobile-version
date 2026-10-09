@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum DisplayMode { light, dark }
+
 enum AccentColor { nebulaCyan, solarFlare, deepPulsar, andromeda }
 
 class ThemeState {

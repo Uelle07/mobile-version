@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
 class AddMemberScreen extends ConsumerStatefulWidget {
   const AddMemberScreen({super.key});
@@ -18,7 +19,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add New Member')),
+      appBar: SpaceAppBar(title: const Text('Add New Member')),
       body: Stepper(
         type: StepperType.horizontal,
         currentStep: _currentStep,
@@ -46,7 +47,9 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
               child: Column(
                 children: [
                   TextFormField(
-                    decoration: const InputDecoration(labelText: 'Account Number'),
+                    decoration: const InputDecoration(
+                      labelText: 'Account Number',
+                    ),
                   ),
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'First Name'),
@@ -55,10 +58,14 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
                     decoration: const InputDecoration(labelText: 'Last Name'),
                   ),
                   TextFormField(
-                    decoration: const InputDecoration(labelText: 'Date of Birth'),
+                    decoration: const InputDecoration(
+                      labelText: 'Date of Birth',
+                    ),
                   ),
                   TextFormField(
-                    decoration: const InputDecoration(labelText: 'Civil Status'),
+                    decoration: const InputDecoration(
+                      labelText: 'Civil Status',
+                    ),
                   ),
                 ],
               ),
@@ -72,13 +79,19 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
               child: Column(
                 children: [
                   TextFormField(
-                    decoration: const InputDecoration(labelText: 'Email Address'),
+                    decoration: const InputDecoration(
+                      labelText: 'Email Address',
+                    ),
                   ),
                   TextFormField(
-                    decoration: const InputDecoration(labelText: 'Phone Number'),
+                    decoration: const InputDecoration(
+                      labelText: 'Phone Number',
+                    ),
                   ),
                   TextFormField(
-                    decoration: const InputDecoration(labelText: 'Present Address'),
+                    decoration: const InputDecoration(
+                      labelText: 'Present Address',
+                    ),
                   ),
                 ],
               ),
@@ -92,7 +105,9 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
               child: Column(
                 children: [
                   TextFormField(
-                    decoration: const InputDecoration(labelText: 'Employer Name'),
+                    decoration: const InputDecoration(
+                      labelText: 'Employer Name',
+                    ),
                   ),
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'Job Title'),

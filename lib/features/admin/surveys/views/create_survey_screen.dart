@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
 class CreateSurveyScreen extends ConsumerStatefulWidget {
   const CreateSurveyScreen({super.key});
@@ -14,7 +15,7 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Survey')),
+      appBar: SpaceAppBar(title: const Text('Create Survey')),
       body: Form(
         key: _formKey,
         child: ListView(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
 class PhotoUploadScreen extends ConsumerStatefulWidget {
   const PhotoUploadScreen({super.key});
@@ -23,13 +24,15 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Upload Photo')),
+      appBar: SpaceAppBar(title: const Text('Upload Photo')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_image != null)
-              const Text('Image Selected') // Use Image.network or File Image in real app
+              const Text(
+                'Image Selected',
+              ) // Use Image.network or File Image in real app
             else
               const Icon(Icons.person, size: 100, color: Colors.grey),
             const SizedBox(height: 20),

@@ -20,7 +20,12 @@ abstract class Member with _$Member {
     @JsonKey(name: 'account_status') @Default('Active') String status,
     @JsonKey(name: 'civil_status') String? civilStatus,
     @JsonKey(name: 'sex') String? gender,
-    @JsonKey(name: 'birthday', fromJson: _dateStringFromJson, toJson: _dateStringToJson) String? dateOfBirth,
+    @JsonKey(
+      name: 'birthday',
+      fromJson: _dateStringFromJson,
+      toJson: _dateStringToJson,
+    )
+    String? dateOfBirth,
     String? nationality,
     @JsonKey(name: 'address') String? homeAddress,
     String? occupation,
@@ -31,15 +36,25 @@ abstract class Member with _$Member {
     @JsonKey(name: 'spouse_name') String? spouseName,
     @JsonKey(name: 'spouse_occupation') String? spouseOccupation,
     @JsonKey(name: 'spouse_employer') String? spouseEmployer,
-    @JsonKey(name: 'created_at', fromJson: _dateTimeFromTimestamp, toJson: _dateTimeToTimestamp)
+    @JsonKey(
+      name: 'created_at',
+      fromJson: _dateTimeFromTimestamp,
+      toJson: _dateTimeToTimestamp,
+    )
     DateTime? registeredAt,
   }) = _Member;
 
   factory Member.fromJson(Map<String, dynamic> json) => _$MemberFromJson(json);
 }
 
-DateTime? _dateTimeFromTimestamp(Timestamp? timestamp) => timestamp?.toDate();
-Timestamp? _dateTimeToTimestamp(DateTime? dateTime) => dateTime == null ? null : Timestamp.fromDate(dateTime);
+DateTime? _dateTimeFromTimestamp(dynamic value) {
+  if (value == null) return null;
+  if (value is Timestamp) return value.toDate();
+  if (value is String) return DateTime.tryParse(value);
+  return null;
+}
+Timestamp? _dateTimeToTimestamp(DateTime? dateTime) =>
+    dateTime == null ? null : Timestamp.fromDate(dateTime);
 
 String? _dateStringFromJson(dynamic value) {
   if (value == null) return null;

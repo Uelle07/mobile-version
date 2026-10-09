@@ -9,7 +9,7 @@ class SettingsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeProvider);
     final themeNotifier = ref.read(themeProvider.notifier);
-    
+
     final isDark = themeState.displayMode == DisplayMode.dark;
 
     return Scaffold(
@@ -20,7 +20,11 @@ class SettingsTab extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.tune, color: Theme.of(context).primaryColor, size: 28),
+                Icon(
+                  Icons.tune,
+                  color: Theme.of(context).primaryColor,
+                  size: 28,
+                ),
                 const SizedBox(width: 12),
                 const Text(
                   'Portal Settings & Theme',
@@ -29,11 +33,14 @@ class SettingsTab extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 32),
-            
+
             // Display Mode
             Row(
               children: [
-                Icon(isDark ? Icons.brightness_3 : Icons.brightness_high, color: Theme.of(context).primaryColor),
+                Icon(
+                  isDark ? Icons.brightness_3 : Icons.brightness_high,
+                  color: Theme.of(context).primaryColor,
+                ),
                 const SizedBox(width: 8),
                 const Text(
                   'Display Mode',
@@ -65,7 +72,8 @@ class SettingsTab extends ConsumerWidget {
                     subtitle: 'Stellar Aerospace',
                     icon: Icons.brightness_high,
                     isSelected: !isDark,
-                    onTap: () => themeNotifier.setDisplayMode(DisplayMode.light),
+                    onTap: () =>
+                        themeNotifier.setDisplayMode(DisplayMode.light),
                   ),
                 ),
               ],
@@ -131,7 +139,9 @@ class SettingsTab extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Settings saved successfully.')),
+                    const SnackBar(
+                      content: Text('Settings saved successfully.'),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.save),
@@ -139,8 +149,13 @@ class SettingsTab extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -173,10 +188,14 @@ class _ModeCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Theme.of(context).cardColor,
+          color: isSelected
+              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withOpacity(0.3),
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.grey.withOpacity(0.3),
             width: 2,
           ),
         ),
@@ -187,22 +206,35 @@ class _ModeCard extends StatelessWidget {
               alignment: Alignment.topRight,
               child: Icon(
                 isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey,
               ),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(icon, color: isSelected ? Theme.of(context).primaryColor : Colors.grey),
+                Icon(
+                  icon,
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(
+              subtitle,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ],
         ),
       ),

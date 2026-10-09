@@ -42,7 +42,9 @@ class AuthController extends _$AuthController {
 
   Future<String?> signIn(String identifier, String password) async {
     try {
-      final email = identifier.contains('@') ? identifier : '$identifier@space.coop';
+      final email = identifier.contains('@')
+          ? identifier
+          : '$identifier@space.coop';
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return null;
     } on FirebaseAuthException catch (e) {
@@ -55,11 +57,19 @@ class AuthController extends _$AuthController {
     }
   }
 
-  Future<String?> register(String identifier, String password, String firstName, String lastName) async {
+  Future<String?> register(
+    String identifier,
+    String password,
+    String firstName,
+    String lastName,
+  ) async {
     try {
-      final email = identifier.contains('@') ? identifier : '$identifier@space.coop';
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      
+      final email = identifier.contains('@')
+          ? identifier
+          : '$identifier@space.coop';
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
+
       // Also add to member collection
       await _firestore.collection('member').doc(userCredential.user!.uid).set({
         'account_number': identifier,
@@ -67,7 +77,7 @@ class AuthController extends _$AuthController {
         'lastname': lastName,
         'registeredAt': FieldValue.serverTimestamp(),
       });
-      
+
       return null;
     } catch (e) {
       return e.toString();

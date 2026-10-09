@@ -31,7 +31,7 @@ _Member _$MemberFromJson(Map<String, dynamic> json) => _Member(
   spouseName: json['spouse_name'] as String?,
   spouseOccupation: json['spouse_occupation'] as String?,
   spouseEmployer: json['spouse_employer'] as String?,
-  registeredAt: _dateTimeFromTimestamp(json['created_at'] as Timestamp?),
+  registeredAt: _dateTimeFromTimestamp(json['created_at']),
 );
 
 Map<String, dynamic> _$MemberToJson(_Member instance) => <String, dynamic>{

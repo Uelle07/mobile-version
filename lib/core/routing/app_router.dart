@@ -11,6 +11,7 @@ import '../../features/admin/surveys/views/survey_overview_screen.dart';
 import '../../features/admin/surveys/views/survey_details_screen.dart';
 import '../../features/member/dashboard/member_dashboard_screen.dart';
 import '../../features/member/profile/views/photo_upload_screen.dart';
+import '../../features/member/profile/views/member_information_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -40,10 +41,7 @@ GoRouter appRouter(Ref ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
@@ -71,10 +69,11 @@ GoRouter appRouter(Ref ref) {
             path: 'surveys/:id',
             builder: (context, state) {
               final id = state.pathParameters['id']!;
-              return SurveyDetailsScreen(surveyId: id);
+              final tab = state.uri.queryParameters['tab'];
+              return SurveyDetailsScreen(surveyId: id, initialTab: tab);
             },
           ),
-        ]
+        ],
       ),
       GoRoute(
         path: '/member',
@@ -84,7 +83,11 @@ GoRouter appRouter(Ref ref) {
             path: 'upload-photo',
             builder: (context, state) => const PhotoUploadScreen(),
           ),
-        ]
+          GoRoute(
+            path: 'information',
+            builder: (context, state) => const MemberInformationScreen(),
+          ),
+        ],
       ),
     ],
   );

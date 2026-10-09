@@ -4,12 +4,14 @@ import '../../auth/controllers/auth_controller.dart';
 import 'views/member_home_tab.dart';
 import '../profile/views/member_profile_tab.dart';
 import '../surveys/views/member_survey_list_tab.dart';
+import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
 class MemberDashboardScreen extends ConsumerStatefulWidget {
   const MemberDashboardScreen({super.key});
 
   @override
-  ConsumerState<MemberDashboardScreen> createState() => _MemberDashboardScreenState();
+  ConsumerState<MemberDashboardScreen> createState() =>
+      _MemberDashboardScreenState();
 }
 
 class _MemberDashboardScreenState extends ConsumerState<MemberDashboardScreen> {
@@ -24,14 +26,34 @@ class _MemberDashboardScreenState extends ConsumerState<MemberDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: SpaceAppBar(
         title: const Text('Member Portal'),
         elevation: 0,
-        backgroundColor: const Color(0xFF4A0072),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Log Out'),
+                  content: const Text('Are you sure you want to log out?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ref.read(authControllerProvider.notifier).signOut();
+                      },
+                      child: const Text('Log Out'),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

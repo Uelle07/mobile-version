@@ -14,29 +14,49 @@ class MemberRepository {
 
   MemberRepository(this._firestore);
 
-  CollectionReference<Member> get _membersRef =>
-      _firestore.collection('member').withConverter<Member>(
-            fromFirestore: (snapshot, _) {
-              final data = snapshot.data() ?? {};
-              if (!data.containsKey('passport_photo') || data['passport_photo'] == null) {
-                data['passport_photo'] = data['photoUrl'] ?? data['photo_url'] ?? data['photo'] ?? data['profilePic'];
-              }
-              if (!data.containsKey('signature_photo') || data['signature_photo'] == null) {
-                data['signature_photo'] = data['signatureUrl'] ?? data['signature_url'] ?? data['signature'];
-              }
-              return Member.fromJson({...data, 'id': snapshot.id});
-            },
-            toFirestore: (member, _) {
-              final json = member.toJson();
-              json.remove('id');
-              return json;
-            },
-          );
+  CollectionReference<Member> get _membersRef => _firestore
+      .collection('member')
+      .withConverter<Member>(
+        fromFirestore: (snapshot, _) {
+          final data = snapshot.data() ?? {};
+          data['account_number'] = data['account_number'] ?? '';
+          data['firstname'] = data['firstname'] ?? '';
+          data['lastname'] = data['lastname'] ?? '';
+          
+          if (!data.containsKey('passport_photo') ||
+              data['passport_photo'] == null) {
+            data['passport_photo'] =
+                data['photoUrl'] ??
+                data['photo_url'] ??
+                data['photo'] ??
+                data['profilePic'];
+          }
+          if (!data.containsKey('signature_photo') ||
+              data['signature_photo'] == null) {
+            data['signature_photo'] =
+                data['signatureUrl'] ??
+                data['signature_url'] ??
+                data['signature'];
+          }
+          return Member.fromJson({...data, 'id': snapshot.id});
+        },
+        toFirestore: (member, _) {
+          final json = member.toJson();
+          json.remove('id');
+          return json;
+        },
+      );
 
   Stream<List<Member>> getMembers() {
     return _membersRef.snapshots().map(
-          (snapshot) => snapshot.docs.map((doc) => doc.data()).toList(),
-        );
+      (snapshot) => snapshot.docs.map((doc) => doc.data()).toList(),
+    );
+  }
+
+  Stream<Member?> getMember(String id) {
+    return _membersRef.doc(id).snapshots().map(
+      (snapshot) => snapshot.data(),
+    );
   }
 
   Future<void> addMember(Member member) async {

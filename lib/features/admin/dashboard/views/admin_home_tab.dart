@@ -29,10 +29,34 @@ class AdminHomeTab extends ConsumerWidget {
             physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 1.5,
             children: [
-              _buildKpiCard('Total Members', totalMembers, Icons.people, Colors.blue),
-              _buildKpiCard('New Today', newAccounts, Icons.person_add, Colors.green),
-              _buildKpiCard('Active Surveys', activeSurveys, Icons.poll, Colors.orange),
-              _buildKpiCard('Recent Updates', const AsyncValue.data(0), Icons.update, Colors.purple), // Placeholder
+              _buildKpiCard(
+                context,
+                'Total Members',
+                totalMembers,
+                Icons.people,
+                Colors.blue,
+              ),
+              _buildKpiCard(
+                context,
+                'New Today',
+                newAccounts,
+                Icons.person_add,
+                Colors.green,
+              ),
+              _buildKpiCard(
+                context,
+                'Active Surveys',
+                activeSurveys,
+                Icons.poll,
+                Colors.orange,
+              ),
+              _buildKpiCard(
+                context,
+                'Recent Updates',
+                const AsyncValue.data(0),
+                Icons.update,
+                Colors.purple,
+              ), // Placeholder
             ],
           ),
           const SizedBox(height: 32),
@@ -48,7 +72,13 @@ class AdminHomeTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildKpiCard(String title, AsyncValue<int> countValue, IconData icon, Color color) {
+  Widget _buildKpiCard(
+    BuildContext context,
+    String title,
+    AsyncValue<int> countValue,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -65,21 +95,29 @@ class AdminHomeTab extends ConsumerWidget {
                 countValue.when(
                   data: (count) => Text(
                     '$count',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   loading: () => const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  error: (error, stack) => const Icon(Icons.error, color: Colors.red),
+                  error: (error, stack) =>
+                      const Icon(Icons.error, color: Colors.red),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

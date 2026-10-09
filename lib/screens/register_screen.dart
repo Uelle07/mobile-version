@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/controllers/auth_controller.dart';
+import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -34,7 +35,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _errorMessage = null;
     });
 
-    final error = await ref.read(authControllerProvider.notifier).register(account, pass, first, last);
+    final error = await ref
+        .read(authControllerProvider.notifier)
+        .register(account, pass, first, last);
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -49,7 +52,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Register Member Account')),
+      appBar: SpaceAppBar(title: const Text('Register Member Account')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -59,7 +62,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 color: Colors.red.shade100,
-                child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
             const SizedBox(height: 16),
             TextField(
@@ -85,8 +91,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: _isLoading ? null : _register,
-              child: _isLoading ? const CircularProgressIndicator() : const Text('Register'),
-            )
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Register'),
+            ),
           ],
         ),
       ),

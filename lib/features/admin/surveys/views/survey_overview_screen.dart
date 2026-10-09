@@ -4,22 +4,23 @@ import 'package:intl/intl.dart';
 import 'package:cooperative_member_app/core/models/survey.dart';
 import 'package:cooperative_member_app/features/admin/surveys/repositories/survey_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
 class SurveyOverviewScreen extends ConsumerStatefulWidget {
   const SurveyOverviewScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<SurveyOverviewScreen> createState() => _SurveyOverviewScreenState();
+  ConsumerState<SurveyOverviewScreen> createState() =>
+      _SurveyOverviewScreenState();
 }
 
 class _SurveyOverviewScreenState extends ConsumerState<SurveyOverviewScreen> {
-  
   @override
   Widget build(BuildContext context) {
     final surveyRepo = ref.watch(surveyRepositoryProvider);
-    
+
     return Scaffold(
-      appBar: AppBar(
+      appBar: SpaceAppBar(
         title: const Text('Survey Management'),
         actions: [
           IconButton(
@@ -56,7 +57,7 @@ class _SurveyOverviewScreenState extends ConsumerState<SurveyOverviewScreen> {
       ),
     );
   }
-  
+
   void _showCreateSurveyModal() {
     final titleController = TextEditingController();
     final descController = TextEditingController();
@@ -70,21 +71,32 @@ class _SurveyOverviewScreenState extends ConsumerState<SurveyOverviewScreen> {
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16, right: 16, top: 24,
+            left: 16,
+            right: 16,
+            top: 24,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Create Survey', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                'Create Survey',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: descController,
-                decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
@@ -92,11 +104,13 @@ class _SurveyOverviewScreenState extends ConsumerState<SurveyOverviewScreen> {
                 onPressed: () async {
                   if (titleController.text.isEmpty) return;
                   final repo = ref.read(surveyRepositoryProvider);
-                  await repo.createSurvey(Survey(
-                    id: '', // Firestore auto-generates
-                    title: titleController.text,
-                    description: descController.text,
-                  ));
+                  await repo.createSurvey(
+                    Survey(
+                      id: '', // Firestore auto-generates
+                      title: titleController.text,
+                      description: descController.text,
+                    ),
+                  );
                   if (context.mounted) Navigator.pop(context);
                 },
                 child: const Text('Create'),
@@ -114,7 +128,8 @@ class SurveyCard extends StatefulWidget {
   final Survey survey;
   final SurveyRepository repository;
 
-  const SurveyCard({Key? key, required this.survey, required this.repository}) : super(key: key);
+  const SurveyCard({Key? key, required this.survey, required this.repository})
+    : super(key: key);
 
   @override
   State<SurveyCard> createState() => _SurveyCardState();
@@ -127,9 +142,9 @@ class _SurveyCardState extends State<SurveyCard> {
     // Auto-healing counts in background
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.repository.healSurveyCounts(
-        widget.survey.id, 
-        widget.survey.questionsCount, 
-        widget.survey.respondentsCount
+        widget.survey.id,
+        widget.survey.questionsCount,
+        widget.survey.respondentsCount,
       );
     });
   }
@@ -138,10 +153,11 @@ class _SurveyCardState extends State<SurveyCard> {
   Widget build(BuildContext context) {
     final survey = widget.survey;
     final DateFormat formatter = DateFormat('MMM dd, yyyy');
-    
+
     String schedule = 'No schedule set';
     if (survey.startDate != null && survey.endDate != null) {
-      schedule = '${formatter.format(survey.startDate!)} - ${formatter.format(survey.endDate!)}';
+      schedule =
+          '${formatter.format(survey.startDate!)} - ${formatter.format(survey.endDate!)}';
     } else if (survey.startDate != null) {
       schedule = 'Starts ${formatter.format(survey.startDate!)}';
     }
@@ -171,11 +187,17 @@ class _SurveyCardState extends State<SurveyCard> {
                 Expanded(
                   child: Text(
                     survey.title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -183,7 +205,11 @@ class _SurveyCardState extends State<SurveyCard> {
                   ),
                   child: Text(
                     survey.status.toUpperCase(),
-                    style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -212,18 +238,23 @@ class _SurveyCardState extends State<SurveyCard> {
               children: [
                 TextButton.icon(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  label: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red),
+                  ),
                   onPressed: () => _confirmDelete(context),
                 ),
                 TextButton.icon(
                   icon: const Icon(Icons.edit),
                   label: const Text('Manage Questions'),
                   onPressed: () {
-                    context.push('/admin/surveys/${survey.id}'); // Assumes GoRouter setup
+                    context.push(
+                      '/admin/surveys/${survey.id}',
+                    ); // Assumes GoRouter setup
                   },
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -233,7 +264,10 @@ class _SurveyCardState extends State<SurveyCard> {
   Widget _buildStat(String label, int value) {
     return Column(
       children: [
-        Text(value.toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(
+          value.toString(),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );
@@ -244,7 +278,9 @@ class _SurveyCardState extends State<SurveyCard> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Survey'),
-        content: const Text('Are you sure you want to delete this survey? This cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this survey? This cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

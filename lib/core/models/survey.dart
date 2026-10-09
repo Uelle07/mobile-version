@@ -51,7 +51,8 @@ abstract class SurveyQuestion with _$SurveyQuestion {
     @TimestampConverter() @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _SurveyQuestion;
 
-  factory SurveyQuestion.fromJson(Map<String, dynamic> json) => _$SurveyQuestionFromJson(json);
+  factory SurveyQuestion.fromJson(Map<String, dynamic> json) =>
+      _$SurveyQuestionFromJson(json);
 }
 
 @freezed
@@ -64,5 +65,6 @@ abstract class SurveyChoice with _$SurveyChoice {
     @TimestampConverter() @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _SurveyChoice;
 
-  factory SurveyChoice.fromJson(Map<String, dynamic> json) => _$SurveyChoiceFromJson(json);
+  factory SurveyChoice.fromJson(Map<String, dynamic> json) =>
+      _$SurveyChoiceFromJson(json);
 }

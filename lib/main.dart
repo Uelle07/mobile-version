@@ -9,7 +9,7 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   Widget app = const CooperativeApp();
   try {
     await Firebase.initializeApp(
@@ -35,12 +35,8 @@ void main() async {
       );
     }
   }
-  
-  runApp(
-    ProviderScope(
-      child: app,
-    ),
-  );
+
+  runApp(ProviderScope(child: app));
 }
 
 class CooperativeApp extends ConsumerWidget {
@@ -62,7 +58,9 @@ class CooperativeApp extends ConsumerWidget {
         brightness: isDark ? Brightness.dark : Brightness.light,
       ),
       fontFamily: 'Inter',
-      scaffoldBackgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: isDark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF8FAFC),
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? const Color(0xFF1E293B) : primaryColor,
         foregroundColor: Colors.white,
