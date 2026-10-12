@@ -153,6 +153,8 @@ class MemberDetailsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildFamilyInfoCard(member),
           const SizedBox(height: 16),
+          _buildReferencesCard(member),
+          const SizedBox(height: 16),
           _buildSignatureCard(context, member),
           const SizedBox(height: 24),
           _buildActionButtons(context),
@@ -522,6 +524,65 @@ class MemberDetailsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _extractReferenceName(dynamic refObj) {
+    if (refObj == null) return '';
+    if (refObj is Map) {
+      return (refObj['name'] ?? refObj['reference_member_name'] ?? '').toString();
+    }
+    if (refObj is String) {
+      try {
+        final decoded = jsonDecode(refObj);
+        if (decoded is Map) {
+          return (decoded['name'] ?? decoded['reference_member_name'] ?? '').toString();
+        }
+      } catch (_) {}
+      return refObj;
+    }
+    return '';
+  }
+
+  Widget _buildReferencesCard(Member member) {
+    final refs = (member.references ?? [])
+        .map((e) => _extractReferenceName(e))
+        .where((e) => e.isNotEmpty)
+        .toList();
+    final ref1 = refs.isNotEmpty ? refs[0] : 'N/A';
+    final ref2 = refs.length > 1 ? refs[1] : 'N/A';
+
+    return _buildSectionCard(
+      title: 'Character References',
+      icon: Icons.people_outline,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildLabel('REFERENCE MEMBER 1'),
+                    _buildValue(ref1),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildLabel('REFERENCE MEMBER 2'),
+                    _buildValue(ref2),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

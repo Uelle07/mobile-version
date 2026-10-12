@@ -120,7 +120,7 @@ class SurveyRepository {
             return SurveyQuestion.fromJson(data);
           }).toList();
           list.sort(
-            (a, b) => (a.questionOrder ?? 0).compareTo(b.questionOrder ?? 0),
+            (a, b) => a.questionOrder.compareTo(b.questionOrder),
           );
           return list;
         });
@@ -278,6 +278,63 @@ class SurveyRepository {
     }
 
     // 6. Update survey respondent count
+    await _firestore.collection('surveys').doc(surveyId).update({
+      'respondentsCount': FieldValue.increment(1),
+    });
+  }
+
+  Future<void> submitSurveyResponse({
+    required String surveyId,
+    required String memberId,
+    required String memberName,
+    required Map<String, String> answers, // questionId -> answer text
+  }) async {
+    // 1. Check if response already exists
+    final responseQuery = await _firestore
+        .collection('survey_responses')
+        .where('survey_id', isEqualTo: surveyId)
+        .where('member_id', isEqualTo: memberId)
+        .get();
+
+    final webResponseQuery = await _firestore
+        .collection('responses')
+        .where('survey_id', isEqualTo: surveyId)
+        .where('member_id', isEqualTo: memberId)
+        .get();
+
+    if (responseQuery.docs.isNotEmpty || webResponseQuery.docs.isNotEmpty) {
+      throw Exception('You have already submitted a response for this survey.');
+    }
+
+    final submittedAtIso = DateTime.now().toIso8601String();
+
+    // 2. Create response (for Flutter admin)
+    final responseRef = await _firestore.collection('survey_responses').add({
+      'survey_id': surveyId,
+      'member_id': memberId,
+      'member_name': memberName,
+      'submitted_at': FieldValue.serverTimestamp(),
+    });
+
+    // 3. Create answers (for Flutter admin) & responses (for Web PHP portal)
+    for (var entry in answers.entries) {
+      await _firestore.collection('survey_answers').add({
+        'response_id': responseRef.id,
+        'question_id': entry.key,
+        'answer': entry.value,
+      });
+
+      await _firestore.collection('responses').add({
+        'survey_id': surveyId,
+        'question_id': entry.key,
+        'member_id': memberId,
+        'member_name': memberName,
+        'answer': entry.value,
+        'submitted_at': submittedAtIso,
+      });
+    }
+
+    // 4. Update survey respondent count
     await _firestore.collection('surveys').doc(surveyId).update({
       'respondentsCount': FieldValue.increment(1),
     });

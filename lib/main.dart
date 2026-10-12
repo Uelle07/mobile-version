@@ -55,15 +55,45 @@ class CooperativeApp extends ConsumerWidget {
       primaryColor: primaryColor,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
+        primary: primaryColor,
         brightness: isDark ? Brightness.dark : Brightness.light,
       ),
       fontFamily: 'Inter',
       scaffoldBackgroundColor: isDark
           ? const Color(0xFF0F172A)
           : const Color(0xFFF8FAFC),
+      cardColor: isDark ? const Color(0xFF13172E) : Colors.white,
+      cardTheme: CardThemeData(
+        color: isDark ? const Color(0xFF13172E) : Colors.white,
+        elevation: isDark ? 2 : 1,
+      ),
       appBarTheme: AppBarTheme(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF13172E) : Colors.white,
+        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+        iconTheme: IconThemeData(
+          color: isDark ? Colors.white : const Color(0xFF0F172A),
+        ),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: isDark ? const Color(0xFF13172E) : Colors.white,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: isDark ? Colors.grey[400] : Colors.grey[600],
+        selectedIconTheme: IconThemeData(color: primaryColor),
+        unselectedIconTheme: IconThemeData(
+          color: isDark ? Colors.grey[400] : Colors.grey[600],
+        ),
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor:
+              ThemeData.estimateBrightnessForColor(primaryColor) ==
+                      Brightness.dark
+                  ? Colors.white
+                  : const Color(0xFF0F172A),
+        ),
       ),
     );
 
@@ -71,6 +101,114 @@ class CooperativeApp extends ConsumerWidget {
       title: 'Cooperative Member Portal',
       theme: themeData,
       routerConfig: goRouter,
+      builder: (context, child) {
+        return _CursorFlashlightOverlay(
+          enabled: themeState.cursorFlashlight,
+          primaryColor: primaryColor,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
+}
+
+class _CursorFlashlightOverlay extends StatefulWidget {
+  final Widget child;
+  final bool enabled;
+  final Color primaryColor;
+
+  const _CursorFlashlightOverlay({
+    required this.child,
+    required this.enabled,
+    required this.primaryColor,
+  });
+
+  @override
+  State<_CursorFlashlightOverlay> createState() =>
+      _CursorFlashlightOverlayState();
+}
+
+class _CursorFlashlightOverlayState extends State<_CursorFlashlightOverlay> {
+  Offset _pointerPos = Offset.zero;
+  bool _hasPointer = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+
+    return MouseRegion(
+      onHover: (event) {
+        if (mounted) {
+          setState(() {
+            _pointerPos = event.position;
+            _hasPointer = true;
+          });
+        }
+      },
+      onExit: (_) {
+        if (mounted) setState(() => _hasPointer = false);
+      },
+      child: Listener(
+        onPointerMove: (event) {
+          if (mounted) {
+            setState(() {
+              _pointerPos = event.position;
+              _hasPointer = true;
+            });
+          }
+        },
+        onPointerUp: (_) {
+          if (mounted) setState(() => _hasPointer = false);
+        },
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            widget.child,
+            if (_hasPointer)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    painter: _FlashlightPainter(
+                      position: _pointerPos,
+                      color: widget.primaryColor,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FlashlightPainter extends CustomPainter {
+  final Offset position;
+  final Color color;
+
+  _FlashlightPainter({required this.position, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..shader = RadialGradient(
+        center: Alignment(
+          (position.dx / size.width) * 2 - 1,
+          (position.dy / size.height) * 2 - 1,
+        ),
+        radius: 0.25,
+        colors: [
+          color.withValues(alpha: 0.12),
+          color.withValues(alpha: 0.04),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(_FlashlightPainter oldDelegate) =>
+      oldDelegate.position != position || oldDelegate.color != color;
 }

@@ -31,6 +31,7 @@ _Member _$MemberFromJson(Map<String, dynamic> json) => _Member(
   spouseName: json['spouse_name'] as String?,
   spouseOccupation: json['spouse_occupation'] as String?,
   spouseEmployer: json['spouse_employer'] as String?,
+  references: json['references'] as List<dynamic>?,
   registeredAt: _dateTimeFromTimestamp(json['created_at']),
 );
 
@@ -59,5 +60,6 @@ Map<String, dynamic> _$MemberToJson(_Member instance) => <String, dynamic>{
   'spouse_name': instance.spouseName,
   'spouse_occupation': instance.spouseOccupation,
   'spouse_employer': instance.spouseEmployer,
+  'references': instance.references,
   'created_at': _dateTimeToTimestamp(instance.registeredAt),
 };

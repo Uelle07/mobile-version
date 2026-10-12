@@ -18,15 +18,18 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _tabs = [
-    const AdminHomeTab(),
-    const MemberListTab(),
-    const SurveyListTab(),
-    const SettingsTab(),
+  List<Widget> get _tabs => const [
+    AdminHomeTab(),
+    MemberListTab(),
+    SurveyListTab(),
+    SettingsTab(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final tabs = _tabs;
+    final safeIndex = _currentIndex.clamp(0, tabs.length - 1);
+
     return Scaffold(
       appBar: SpaceAppBar(
         title: const Text('Admin Dashboard'),
@@ -58,9 +61,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
         ],
       ),
-      body: _tabs[_currentIndex],
+      body: tabs[safeIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: safeIndex,
         onTap: (i) => setState(() => _currentIndex = i),
         items: const [
           BottomNavigationBarItem(

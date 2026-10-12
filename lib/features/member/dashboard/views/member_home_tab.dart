@@ -36,7 +36,9 @@ class MemberHomeTab extends ConsumerWidget {
             'What would you like to do?',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : const Color(0xFF0F172A),
             ),
           ),
           
@@ -103,7 +105,11 @@ class MemberHomeTab extends ConsumerWidget {
   }
 
   Widget _buildWelcomeBanner(BuildContext context, Color primaryColor, Member member) {
-    final String displayName = '${member.firstName} ${member.lastName}';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF13172E) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtextColor = isDark ? Colors.white70 : Colors.black54;
+    final String displayName = '${member.firstName} ${member.lastName}'.trim();
     final String accNumber = member.accountNumber.isNotEmpty ? member.accountNumber : 'UNKNOWN';
     final String? photoUrl = member.photoUrl;
     final bool isVerified = member.isVerified;
@@ -111,15 +117,17 @@ class MemberHomeTab extends ConsumerWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFF13172E),
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: primaryColor.withValues(alpha: 0.5),
+          color: primaryColor.withValues(alpha: isDark ? 0.5 : 0.3),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withValues(alpha: 0.15),
+            color: isDark
+                ? primaryColor.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.05),
             blurRadius: 16,
             spreadRadius: 2,
           ),
@@ -139,7 +147,7 @@ class MemberHomeTab extends ConsumerWidget {
                     height: 60,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF0F172A),
+                      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
                       border: Border.all(color: primaryColor, width: 2),
                       boxShadow: [
                         BoxShadow(
@@ -152,25 +160,49 @@ class MemberHomeTab extends ConsumerWidget {
                     child: ClipOval(
                       child: Builder(builder: (context) {
                         if (photoUrl == null || photoUrl.isEmpty) {
-                          return const Icon(Icons.person, color: Colors.white54, size: 30);
+                          return Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey, size: 30);
                         }
-                        if (photoUrl.startsWith('data:image')) {
+                        if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) {
+                          return Image.network(
+                            photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey, size: 30),
+                          );
+                        }
+                        final lowerUrl = photoUrl.toLowerCase();
+                        if (lowerUrl.endsWith('.jpg') ||
+                            lowerUrl.endsWith('.png') ||
+                            lowerUrl.endsWith('.jpeg') ||
+                            lowerUrl.endsWith('.gif') ||
+                            lowerUrl.endsWith('.webp')) {
+                          // It's a filename from the PHP backend.
+                          String baseUrl = 'http://localhost/cooperative-member-information-system/uploads/';
                           try {
-                            final base64String = photoUrl.split(',').last;
-                            return Image.memory(
-                              base64Decode(base64String),
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white54, size: 30),
-                            );
-                          } catch (_) {
-                            return const Icon(Icons.person, color: Colors.white54, size: 30);
-                          }
+                            if (Theme.of(context).platform == TargetPlatform.android) {
+                              baseUrl = 'http://10.0.2.2/cooperative-member-information-system/uploads/';
+                            }
+                          } catch (_) {}
+                          
+                          return Image.network(
+                            '$baseUrl$photoUrl',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey, size: 30),
+                          );
                         }
-                        return Image.network(
-                          photoUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white54, size: 30),
-                        );
+                        
+                        // Fallback to base64 parsing
+                        try {
+                          final base64String = photoUrl.contains(',')
+                              ? photoUrl.split(',').last.replaceAll(RegExp(r'\s+'), '')
+                              : photoUrl.replaceAll(RegExp(r'\s+'), '');
+                          return Image.memory(
+                            base64Decode(base64String),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey, size: 30),
+                          );
+                        } catch (_) {
+                          return Icon(Icons.person, color: isDark ? Colors.white54 : Colors.grey, size: 30);
+                        }
                       }),
                     ),
                   ),
@@ -183,7 +215,7 @@ class MemberHomeTab extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: primaryColor,
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF13172E), width: 2),
+                        border: Border.all(color: cardBg, width: 2),
                       ),
                     ),
                   ),
@@ -207,12 +239,15 @@ class MemberHomeTab extends ConsumerWidget {
                         children: [
                           Icon(Icons.badge, color: primaryColor, size: 12),
                           const SizedBox(width: 4),
-                          Text(
-                            'ACCT NO. $accNumber',
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                          Flexible(
+                            child: Text(
+                              'ACCT NO. $accNumber',
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -222,11 +257,13 @@ class MemberHomeTab extends ConsumerWidget {
                     // Welcome Name
                     Text(
                       'Welcome, $displayName!',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     // Verified Badge
@@ -238,11 +275,14 @@ class MemberHomeTab extends ConsumerWidget {
                           size: 14,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          isVerified ? 'Verified Member' : 'Unverified Member',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 12,
+                        Expanded(
+                          child: Text(
+                            isVerified ? 'Verified Member' : 'Unverified Member',
+                            style: TextStyle(
+                              color: subtextColor,
+                              fontSize: 12,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -266,17 +306,32 @@ class MemberHomeTab extends ConsumerWidget {
     required Color primaryColor,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF13172E) : Colors.white;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final descColor = isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black54;
+    final borderColor = isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF13172E),
+          color: cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
+            color: borderColor,
             width: 1,
           ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -307,8 +362,8 @@ class MemberHomeTab extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: titleColor,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -317,7 +372,7 @@ class MemberHomeTab extends ConsumerWidget {
             Text(
               description,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: descColor,
                 fontSize: 14,
                 height: 1.4,
               ),

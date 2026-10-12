@@ -20,14 +20,22 @@ class SpaceAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultBg = isDark ? const Color(0xFF13172E) : Colors.white;
+    final barBg =
+        backgroundColor ??
+        Theme.of(context).appBarTheme.backgroundColor ??
+        defaultBg;
+    final primaryColor = Theme.of(context).primaryColor;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+    final iconColor = isDark ? Colors.white : const Color(0xFF0F172A);
+
     return AppBar(
-      backgroundColor:
-          backgroundColor ??
-          Theme.of(context).appBarTheme.backgroundColor ??
-          const Color(0xFF13172E),
+      backgroundColor: barBg,
       elevation: elevation,
       automaticallyImplyLeading: automaticallyImplyLeading,
       leading: leading,
+      iconTheme: IconThemeData(color: iconColor),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -35,7 +43,7 @@ class SpaceAppBar extends StatelessWidget implements PreferredSizeWidget {
             'assets/images/space_brand_logo.png',
             height: 32,
             errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.rocket, color: Colors.pinkAccent),
+                Icon(Icons.rocket, color: primaryColor),
           ),
           const SizedBox(width: 8),
           Column(
@@ -45,9 +53,7 @@ class SpaceAppBar extends StatelessWidget implements PreferredSizeWidget {
               Text(
                 'SPACE',
                 style: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary, // Typically pink/primary color
+                  color: primaryColor,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.5,
@@ -56,11 +62,7 @@ class SpaceAppBar extends StatelessWidget implements PreferredSizeWidget {
               Text(
                 'COOPERATIVE PORTAL',
                 style: TextStyle(
-                  color:
-                      Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.color?.withOpacity(0.7) ??
-                      Colors.white70,
+                  color: subtitleColor,
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.0,

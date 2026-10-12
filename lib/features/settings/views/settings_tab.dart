@@ -11,6 +11,9 @@ class SettingsTab extends ConsumerWidget {
     final themeNotifier = ref.read(themeProvider.notifier);
 
     final isDark = themeState.displayMode == DisplayMode.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor = isDark ? Colors.grey[400] : Colors.grey[600];
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -22,13 +25,19 @@ class SettingsTab extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.tune,
-                  color: Theme.of(context).primaryColor,
+                  color: primaryColor,
                   size: 28,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Portal Settings & Theme',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Portal Settings & Theme',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: titleColor,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -39,19 +48,25 @@ class SettingsTab extends ConsumerWidget {
               children: [
                 Icon(
                   isDark ? Icons.brightness_3 : Icons.brightness_high,
-                  color: Theme.of(context).primaryColor,
+                  color: primaryColor,
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  'Display Mode',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Display Mode',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: titleColor,
+                    ),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               'Choose between deep cosmic night or luminous celestial light.',
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: subtitleColor),
             ),
             const SizedBox(height: 16),
             Row(
@@ -83,18 +98,24 @@ class SettingsTab extends ConsumerWidget {
             // Accent Color
             Row(
               children: [
-                Icon(Icons.palette, color: Theme.of(context).primaryColor),
+                Icon(Icons.palette, color: primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  'Space Accent Color Scheme',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Space Accent Color Scheme',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: titleColor,
+                    ),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               'Select complementary nebula and aura glowing accents.',
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: subtitleColor),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -113,24 +134,29 @@ class SettingsTab extends ConsumerWidget {
             // Cursor Flashlight
             Row(
               children: [
-                Icon(Icons.highlight, color: Theme.of(context).primaryColor),
+                Icon(Icons.highlight, color: primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  'Cursor Flashlight Glow Effect',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    'Cursor Flashlight Glow Effect',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: titleColor,
+                    ),
+                  ),
                 ),
-                const Spacer(),
                 Switch(
                   value: themeState.cursorFlashlight,
                   onChanged: (val) => themeNotifier.setCursorFlashlight(val),
-                  activeColor: Theme.of(context).primaryColor,
+                  activeColor: primaryColor,
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               'Dynamic radial ambient flashlight beam that follows mouse movement.',
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: subtitleColor),
             ),
             const SizedBox(height: 48),
 
@@ -147,8 +173,12 @@ class SettingsTab extends ConsumerWidget {
                 icon: const Icon(Icons.save),
                 label: const Text('Save Settings'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
+                  backgroundColor: primaryColor,
+                  foregroundColor:
+                      ThemeData.estimateBrightnessForColor(primaryColor) ==
+                              Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 16,
@@ -183,21 +213,35 @@ class _ModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).primaryColor;
+    final cardBg = isSelected
+        ? primary.withOpacity(0.12)
+        : (isDark ? const Color(0xFF1E293B) : Colors.white);
+    final borderColor = isSelected
+        ? primary
+        : (isDark ? Colors.white12 : Colors.grey.withOpacity(0.25));
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.1)
-              : Theme.of(context).cardColor,
+          color: cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? Theme.of(context).primaryColor
-                : Colors.grey.withOpacity(0.3),
+            color: borderColor,
             width: 2,
           ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,9 +250,7 @@ class _ModeCard extends StatelessWidget {
               alignment: Alignment.topRight,
               child: Icon(
                 isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: isSelected
-                    ? Theme.of(context).primaryColor
-                    : Colors.grey,
+                color: isSelected ? primary : Colors.grey,
               ),
             ),
             const SizedBox(height: 8),
@@ -217,15 +259,20 @@ class _ModeCard extends StatelessWidget {
                 Icon(
                   icon,
                   color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.grey,
+                      ? primary
+                      : (isDark ? Colors.grey[400] : Colors.grey[700]),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
               ],
@@ -233,7 +280,12 @@ class _ModeCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
             ),
           ],
         ),
@@ -255,18 +307,40 @@ class _ColorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isSelected
+        ? color.color.withOpacity(0.12)
+        : (isDark ? const Color(0xFF1E293B) : Colors.white);
+    final borderColor = isSelected
+        ? color.color
+        : (isDark ? Colors.white12 : Colors.grey.withOpacity(0.25));
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 140,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color.color : Colors.grey.withOpacity(0.3),
+            color: borderColor,
             width: 2,
           ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: color.color.withOpacity(0.25),
+                blurRadius: 8,
+                spreadRadius: 1,
+              )
+            else if (!isDark)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         child: Column(
           children: [
@@ -276,13 +350,26 @@ class _ColorCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: color.color,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.color.withOpacity(0.4),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),
             Text(
               color.name,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
             ),
           ],
         ),

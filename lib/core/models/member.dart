@@ -36,6 +36,7 @@ abstract class Member with _$Member {
     @JsonKey(name: 'spouse_name') String? spouseName,
     @JsonKey(name: 'spouse_occupation') String? spouseOccupation,
     @JsonKey(name: 'spouse_employer') String? spouseEmployer,
+    List<dynamic>? references,
     @JsonKey(
       name: 'created_at',
       fromJson: _dateTimeFromTimestamp,
