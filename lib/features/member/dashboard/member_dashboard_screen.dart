@@ -31,6 +31,7 @@ class _MemberDashboardScreenState extends ConsumerState<MemberDashboardScreen> {
     final safeIndex = _currentIndex.clamp(0, tabs.length - 1);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: SpaceAppBar(
         title: const Text('Member Portal'),
         elevation: 0,

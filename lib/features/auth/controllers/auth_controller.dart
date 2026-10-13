@@ -70,13 +70,26 @@ class AuthController extends _$AuthController {
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
+      final uid = userCredential.user!.uid;
+
       // Also add to member collection
-      await _firestore.collection('member').doc(userCredential.user!.uid).set({
+      await _firestore.collection('member').doc(uid).set({
+        'member_id': uid,
         'account_number': identifier,
         'firstname': firstName,
         'lastname': lastName,
+        'account_status': 'Active',
+        'created_at': FieldValue.serverTimestamp(),
         'registeredAt': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
+
+      await _firestore.collection('member_account').doc(uid).set({
+        'member_id': uid,
+        'account_number': identifier,
+        'first_login': true,
+        'password_changed': false,
+        'created_at': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
       return null;
     } catch (e) {

@@ -28,6 +28,7 @@ abstract class Survey with _$Survey {
     required String id,
     required String title,
     @Default('') String description,
+    @Default('') String instructions,
     @Default('draft') String status, // 'draft', 'active', 'closed'
     @Default(0) int questionsCount,
     @Default(0) int respondentsCount,

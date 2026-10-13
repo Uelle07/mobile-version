@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/controllers/auth_controller.dart';
@@ -12,6 +13,11 @@ import '../../features/admin/surveys/views/survey_details_screen.dart';
 import '../../features/member/dashboard/member_dashboard_screen.dart';
 import '../../features/member/profile/views/photo_upload_screen.dart';
 import '../../features/member/profile/views/member_information_screen.dart';
+import '../../features/member/profile/views/member_update_info_screen.dart';
+import '../../features/member/profile/views/change_password_screen.dart';
+import '../../features/member/surveys/views/member_survey_details_screen.dart';
+import '../../features/member/surveys/views/member_survey_list_tab.dart';
+import '../../features/member/surveys/views/member_survey_success_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -21,6 +27,61 @@ GoRouter appRouter(Ref ref) {
 
   return GoRouter(
     initialLocation: '/login',
+    errorBuilder: (context, state) => Scaffold(
+      backgroundColor: const Color(0xFF0B132B),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.amber,
+                  size: 64,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Page Not Found',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  state.error?.toString() ??
+                      'The requested page could not be found.',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () => context.go('/member'),
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Return to Dashboard'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8B5CF6),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
     redirect: (context, state) {
       if (authState.isLoading || authState.hasError) return null;
 
@@ -76,6 +137,10 @@ GoRouter appRouter(Ref ref) {
         ],
       ),
       GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
         path: '/member',
         builder: (context, state) => const MemberDashboardScreen(),
         routes: [
@@ -86,6 +151,32 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: 'information',
             builder: (context, state) => const MemberInformationScreen(),
+          ),
+          GoRoute(
+            path: 'update-info',
+            builder: (context, state) => const MemberUpdateInfoScreen(),
+          ),
+          GoRoute(
+            path: 'surveys',
+            builder: (context, state) => const MemberSurveysScreen(),
+          ),
+          GoRoute(
+            path: 'take-survey/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return MemberSurveyDetailsScreen(surveyId: id);
+            },
+          ),
+          GoRoute(
+            path: 'survey-success/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return MemberSurveySuccessScreen(surveyId: id);
+            },
+          ),
+          GoRoute(
+            path: 'change-password',
+            builder: (context, state) => const ChangePasswordScreen(),
           ),
         ],
       ),

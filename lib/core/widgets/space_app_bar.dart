@@ -36,41 +36,45 @@ class SpaceAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: automaticallyImplyLeading,
       leading: leading,
       iconTheme: IconThemeData(color: iconColor),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            'assets/images/space_brand_logo.png',
-            height: 32,
-            errorBuilder: (context, error, stackTrace) =>
-                Icon(Icons.rocket, color: primaryColor),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'SPACE',
-                style: TextStyle(
-                  color: primaryColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+      title: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: title ??
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/space_brand_logo.png',
+                  height: 32,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.rocket, color: primaryColor),
                 ),
-              ),
-              Text(
-                'COOPERATIVE PORTAL',
-                style: TextStyle(
-                  color: subtitleColor,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.0,
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'SPACE',
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    Text(
+                      'COOPERATIVE PORTAL',
+                      style: TextStyle(
+                        color: subtitleColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
       ),
       actions: actions,
     );

@@ -28,12 +28,6 @@ class _SurveyDetailsScreenState extends ConsumerState<SurveyDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-generate mock data for Jane Doe on load
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final repo = ref.read(surveyRepositoryProvider);
-      repo.generateMockData(widget.surveyId);
-    });
-
     if (widget.initialTab == 'responses') {
       _activeTab = 1;
     } else if (widget.initialTab == 'settings') {

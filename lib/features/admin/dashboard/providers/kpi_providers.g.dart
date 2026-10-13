@@ -109,3 +109,38 @@ final class NewAccountsTodayCountProvider
 
 String _$newAccountsTodayCountHash() =>
     r'7ea610db45641547a5246b731f6c02689105e270';
+
+@ProviderFor(recentUpdatesCount)
+final recentUpdatesCountProvider = RecentUpdatesCountProvider._();
+
+final class RecentUpdatesCountProvider
+    extends $FunctionalProvider<AsyncValue<int>, int, Stream<int>>
+    with $FutureModifier<int>, $StreamProvider<int> {
+  RecentUpdatesCountProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'recentUpdatesCountProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$recentUpdatesCountHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<int> create(Ref ref) {
+    return recentUpdatesCount(ref);
+  }
+}
+
+String _$recentUpdatesCountHash() =>
+    r'9c4e812a117a34ef2ff1365d4b3321ebaa5c73b1';
+

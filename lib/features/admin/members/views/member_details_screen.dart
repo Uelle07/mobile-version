@@ -25,19 +25,6 @@ class MemberDetailsScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
-        title: Row(
-          children: [
-            const Icon(Icons.assignment_ind, color: Colors.pinkAccent),
-            const SizedBox(width: 8),
-            const Text(
-              'Member Profile Record',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
       ),
       body: membersAsync.when(
         data: (members) {
@@ -96,6 +83,21 @@ class MemberDetailsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Row(
+            children: [
+              Icon(Icons.assignment_ind, color: Colors.pinkAccent, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Member Profile Record',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Column(
             mainAxisSize: MainAxisSize.min,
             verticalDirection: VerticalDirection.up,

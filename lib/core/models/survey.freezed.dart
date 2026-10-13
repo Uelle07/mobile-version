@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Survey {
 
- String get id; String get title; String get description; String get status; int get questionsCount; int get respondentsCount;@TimestampConverter()@JsonKey(name: 'start_date') DateTime? get startDate;@TimestampConverter()@JsonKey(name: 'end_date') DateTime? get endDate;@TimestampConverter()@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'created_by_staff_id') String? get createdByStaffId;
+ String get id; String get title; String get description; String get instructions; String get status; int get questionsCount; int get respondentsCount;@TimestampConverter()@JsonKey(name: 'start_date') DateTime? get startDate;@TimestampConverter()@JsonKey(name: 'end_date') DateTime? get endDate;@TimestampConverter()@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'created_by_staff_id') String? get createdByStaffId;
 /// Create a copy of Survey
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $SurveyCopyWith<Survey> get copyWith => _$SurveyCopyWithImpl<Survey>(this as Sur
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Survey&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.questionsCount, questionsCount) || other.questionsCount == questionsCount)&&(identical(other.respondentsCount, respondentsCount) || other.respondentsCount == respondentsCount)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdByStaffId, createdByStaffId) || other.createdByStaffId == createdByStaffId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Survey&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.instructions, instructions) || other.instructions == instructions)&&(identical(other.status, status) || other.status == status)&&(identical(other.questionsCount, questionsCount) || other.questionsCount == questionsCount)&&(identical(other.respondentsCount, respondentsCount) || other.respondentsCount == respondentsCount)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdByStaffId, createdByStaffId) || other.createdByStaffId == createdByStaffId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,status,questionsCount,respondentsCount,startDate,endDate,createdAt,createdByStaffId);
+int get hashCode => Object.hash(runtimeType,id,title,description,instructions,status,questionsCount,respondentsCount,startDate,endDate,createdAt,createdByStaffId);
 
 @override
 String toString() {
-  return 'Survey(id: $id, title: $title, description: $description, status: $status, questionsCount: $questionsCount, respondentsCount: $respondentsCount, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, createdByStaffId: $createdByStaffId)';
+  return 'Survey(id: $id, title: $title, description: $description, instructions: $instructions, status: $status, questionsCount: $questionsCount, respondentsCount: $respondentsCount, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, createdByStaffId: $createdByStaffId)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $SurveyCopyWith<$Res>  {
   factory $SurveyCopyWith(Survey value, $Res Function(Survey) _then) = _$SurveyCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String description, String status, int questionsCount, int respondentsCount,@TimestampConverter()@JsonKey(name: 'start_date') DateTime? startDate,@TimestampConverter()@JsonKey(name: 'end_date') DateTime? endDate,@TimestampConverter()@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'created_by_staff_id') String? createdByStaffId
+ String id, String title, String description, String instructions, String status, int questionsCount, int respondentsCount,@TimestampConverter()@JsonKey(name: 'start_date') DateTime? startDate,@TimestampConverter()@JsonKey(name: 'end_date') DateTime? endDate,@TimestampConverter()@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'created_by_staff_id') String? createdByStaffId
 });
 
 
@@ -66,11 +66,12 @@ class _$SurveyCopyWithImpl<$Res>
 
 /// Create a copy of Survey
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? status = null,Object? questionsCount = null,Object? respondentsCount = null,Object? startDate = freezed,Object? endDate = freezed,Object? createdAt = freezed,Object? createdByStaffId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? instructions = null,Object? status = null,Object? questionsCount = null,Object? respondentsCount = null,Object? startDate = freezed,Object? endDate = freezed,Object? createdAt = freezed,Object? createdByStaffId = freezed,}) {
   return _then(Survey(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,instructions: null == instructions ? _self.instructions : instructions // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,questionsCount: null == questionsCount ? _self.questionsCount : questionsCount // ignore: cast_nullable_to_non_nullable
 as int,respondentsCount: null == respondentsCount ? _self.respondentsCount : respondentsCount // ignore: cast_nullable_to_non_nullable
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String status,  int questionsCount,  int respondentsCount, @TimestampConverter()@JsonKey(name: 'start_date')  DateTime? startDate, @TimestampConverter()@JsonKey(name: 'end_date')  DateTime? endDate, @TimestampConverter()@JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'created_by_staff_id')  String? createdByStaffId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String instructions,  String status,  int questionsCount,  int respondentsCount, @TimestampConverter()@JsonKey(name: 'start_date')  DateTime? startDate, @TimestampConverter()@JsonKey(name: 'end_date')  DateTime? endDate, @TimestampConverter()@JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'created_by_staff_id')  String? createdByStaffId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Survey() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.status,_that.questionsCount,_that.respondentsCount,_that.startDate,_that.endDate,_that.createdAt,_that.createdByStaffId);case _:
+return $default(_that.id,_that.title,_that.description,_that.instructions,_that.status,_that.questionsCount,_that.respondentsCount,_that.startDate,_that.endDate,_that.createdAt,_that.createdByStaffId);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.id,_that.title,_that.description,_that.status,_that.questi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String status,  int questionsCount,  int respondentsCount, @TimestampConverter()@JsonKey(name: 'start_date')  DateTime? startDate, @TimestampConverter()@JsonKey(name: 'end_date')  DateTime? endDate, @TimestampConverter()@JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'created_by_staff_id')  String? createdByStaffId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String instructions,  String status,  int questionsCount,  int respondentsCount, @TimestampConverter()@JsonKey(name: 'start_date')  DateTime? startDate, @TimestampConverter()@JsonKey(name: 'end_date')  DateTime? endDate, @TimestampConverter()@JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'created_by_staff_id')  String? createdByStaffId)  $default,) {final _that = this;
 switch (_that) {
 case _Survey():
-return $default(_that.id,_that.title,_that.description,_that.status,_that.questionsCount,_that.respondentsCount,_that.startDate,_that.endDate,_that.createdAt,_that.createdByStaffId);case _:
+return $default(_that.id,_that.title,_that.description,_that.instructions,_that.status,_that.questionsCount,_that.respondentsCount,_that.startDate,_that.endDate,_that.createdAt,_that.createdByStaffId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.id,_that.title,_that.description,_that.status,_that.questi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String status,  int questionsCount,  int respondentsCount, @TimestampConverter()@JsonKey(name: 'start_date')  DateTime? startDate, @TimestampConverter()@JsonKey(name: 'end_date')  DateTime? endDate, @TimestampConverter()@JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'created_by_staff_id')  String? createdByStaffId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String instructions,  String status,  int questionsCount,  int respondentsCount, @TimestampConverter()@JsonKey(name: 'start_date')  DateTime? startDate, @TimestampConverter()@JsonKey(name: 'end_date')  DateTime? endDate, @TimestampConverter()@JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'created_by_staff_id')  String? createdByStaffId)?  $default,) {final _that = this;
 switch (_that) {
 case _Survey() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.status,_that.questionsCount,_that.respondentsCount,_that.startDate,_that.endDate,_that.createdAt,_that.createdByStaffId);case _:
+return $default(_that.id,_that.title,_that.description,_that.instructions,_that.status,_that.questionsCount,_that.respondentsCount,_that.startDate,_that.endDate,_that.createdAt,_that.createdByStaffId);case _:
   return null;
 
 }
@@ -219,12 +220,13 @@ return $default(_that.id,_that.title,_that.description,_that.status,_that.questi
 @JsonSerializable()
 
 class _Survey implements Survey {
-  const _Survey({required this.id, required this.title, this.description = '', this.status = 'draft', this.questionsCount = 0, this.respondentsCount = 0, @TimestampConverter()@JsonKey(name: 'start_date') this.startDate, @TimestampConverter()@JsonKey(name: 'end_date') this.endDate, @TimestampConverter()@JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'created_by_staff_id') this.createdByStaffId});
+  const _Survey({required this.id, required this.title, this.description = '', this.instructions = '', this.status = 'draft', this.questionsCount = 0, this.respondentsCount = 0, @TimestampConverter()@JsonKey(name: 'start_date') this.startDate, @TimestampConverter()@JsonKey(name: 'end_date') this.endDate, @TimestampConverter()@JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'created_by_staff_id') this.createdByStaffId});
   factory _Survey.fromJson(Map<String, dynamic> json) => _$SurveyFromJson(json);
 
 @override final  String id;
 @override final  String title;
 @override@JsonKey() final  String description;
+@override@JsonKey() final  String instructions;
 @override@JsonKey() final  String status;
 @override@JsonKey() final  int questionsCount;
 @override@JsonKey() final  int respondentsCount;
@@ -246,16 +248,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Survey&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.questionsCount, questionsCount) || other.questionsCount == questionsCount)&&(identical(other.respondentsCount, respondentsCount) || other.respondentsCount == respondentsCount)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdByStaffId, createdByStaffId) || other.createdByStaffId == createdByStaffId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Survey&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.instructions, instructions) || other.instructions == instructions)&&(identical(other.status, status) || other.status == status)&&(identical(other.questionsCount, questionsCount) || other.questionsCount == questionsCount)&&(identical(other.respondentsCount, respondentsCount) || other.respondentsCount == respondentsCount)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdByStaffId, createdByStaffId) || other.createdByStaffId == createdByStaffId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,description,status,questionsCount,respondentsCount,startDate,endDate,createdAt,createdByStaffId);
+int get hashCode => Object.hash(runtimeType,id,title,description,instructions,status,questionsCount,respondentsCount,startDate,endDate,createdAt,createdByStaffId);
 
 @override
 String toString() {
-  return 'Survey(id: $id, title: $title, description: $description, status: $status, questionsCount: $questionsCount, respondentsCount: $respondentsCount, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, createdByStaffId: $createdByStaffId)';
+  return 'Survey(id: $id, title: $title, description: $description, instructions: $instructions, status: $status, questionsCount: $questionsCount, respondentsCount: $respondentsCount, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, createdByStaffId: $createdByStaffId)';
 }
 
 
@@ -266,7 +268,7 @@ abstract mixin class _$SurveyCopyWith<$Res> implements $SurveyCopyWith<$Res> {
   factory _$SurveyCopyWith(_Survey value, $Res Function(_Survey) _then) = __$SurveyCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String description, String status, int questionsCount, int respondentsCount,@TimestampConverter()@JsonKey(name: 'start_date') DateTime? startDate,@TimestampConverter()@JsonKey(name: 'end_date') DateTime? endDate,@TimestampConverter()@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'created_by_staff_id') String? createdByStaffId
+ String id, String title, String description, String instructions, String status, int questionsCount, int respondentsCount,@TimestampConverter()@JsonKey(name: 'start_date') DateTime? startDate,@TimestampConverter()@JsonKey(name: 'end_date') DateTime? endDate,@TimestampConverter()@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'created_by_staff_id') String? createdByStaffId
 });
 
 
@@ -283,11 +285,12 @@ class __$SurveyCopyWithImpl<$Res>
 
 /// Create a copy of Survey
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? status = null,Object? questionsCount = null,Object? respondentsCount = null,Object? startDate = freezed,Object? endDate = freezed,Object? createdAt = freezed,Object? createdByStaffId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? instructions = null,Object? status = null,Object? questionsCount = null,Object? respondentsCount = null,Object? startDate = freezed,Object? endDate = freezed,Object? createdAt = freezed,Object? createdByStaffId = freezed,}) {
   return _then(_Survey(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,instructions: null == instructions ? _self.instructions : instructions // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,questionsCount: null == questionsCount ? _self.questionsCount : questionsCount // ignore: cast_nullable_to_non_nullable
 as int,respondentsCount: null == respondentsCount ? _self.respondentsCount : respondentsCount // ignore: cast_nullable_to_non_nullable

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,7 +40,29 @@ class ThemeNotifier extends Notifier<ThemeState> {
   @override
   ThemeState build() {
     _loadPreferences();
+    final sub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        _loadFromFirestore(user.uid);
+      }
+    });
+    ref.onDispose(sub.cancel);
     return const ThemeState();
+  }
+
+  DisplayMode? _parseDisplayMode(String? modeStr) {
+    if (modeStr == null) return null;
+    for (final m in DisplayMode.values) {
+      if (m.name == modeStr) return m;
+    }
+    return null;
+  }
+
+  AccentColor? _parseAccentColor(String? colorStr) {
+    if (colorStr == null) return null;
+    for (final c in AccentColor.values) {
+      if (c.name == colorStr) return c;
+    }
+    return null;
   }
 
   Future<void> _loadPreferences() async {
@@ -48,25 +72,32 @@ class ThemeNotifier extends Notifier<ThemeState> {
       final colorStr = prefs.getString(_keyAccentColor);
       final flashlight = prefs.getBool(_keyFlashlight);
 
-      DisplayMode? mode;
-      if (modeStr != null) {
-        for (final m in DisplayMode.values) {
-          if (m.name == modeStr) {
-            mode = m;
-            break;
-          }
-        }
-      }
+      state = state.copyWith(
+        displayMode: _parseDisplayMode(modeStr),
+        accentColor: _parseAccentColor(colorStr),
+        cursorFlashlight: flashlight,
+      );
 
-      AccentColor? color;
-      if (colorStr != null) {
-        for (final c in AccentColor.values) {
-          if (c.name == colorStr) {
-            color = c;
-            break;
-          }
-        }
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await _loadFromFirestore(user.uid);
       }
+    } catch (_) {}
+  }
+
+  Future<void> _loadFromFirestore(String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('user_settings')
+          .doc(uid)
+          .get();
+      if (!doc.exists || doc.data() == null) return;
+      final data = doc.data()!;
+      final mode = _parseDisplayMode(data['display_mode']?.toString());
+      final color = _parseAccentColor(data['accent_color']?.toString());
+      final flashlight = data['cursor_flashlight'] is bool
+          ? data['cursor_flashlight'] as bool
+          : null;
 
       state = state.copyWith(
         displayMode: mode,
@@ -79,16 +110,36 @@ class ThemeNotifier extends Notifier<ThemeState> {
   void setDisplayMode(DisplayMode mode) {
     state = state.copyWith(displayMode: mode);
     _saveString(_keyDisplayMode, mode.name);
+    saveToFirestore();
   }
 
   void setAccentColor(AccentColor color) {
     state = state.copyWith(accentColor: color);
     _saveString(_keyAccentColor, color.name);
+    saveToFirestore();
   }
 
   void setCursorFlashlight(bool value) {
     state = state.copyWith(cursorFlashlight: value);
     _saveBool(_keyFlashlight, value);
+    saveToFirestore();
+  }
+
+  Future<void> saveToFirestore() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      await FirebaseFirestore.instance
+          .collection('user_settings')
+          .doc(user.uid)
+          .set({
+            'user_id': user.uid,
+            'display_mode': state.displayMode.name,
+            'accent_color': state.accentColor.name,
+            'cursor_flashlight': state.cursorFlashlight,
+            'updated_at': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+    } catch (_) {}
   }
 
   Future<void> _saveString(String key, String value) async {

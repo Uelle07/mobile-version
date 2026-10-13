@@ -16,7 +16,7 @@ _Member _$MemberFromJson(Map<String, dynamic> json) => _Member(
   phone: json['contact_number'] as String?,
   photoUrl: json['passport_photo'] as String?,
   signatureUrl: json['signature_photo'] as String?,
-  isVerified: json['is_verified'] as bool? ?? false,
+  isVerified: json['is_verified'] as bool? ?? true,
   status: json['account_status'] as String? ?? 'Active',
   civilStatus: json['civil_status'] as String?,
   gender: json['sex'] as String?,

@@ -15,7 +15,56 @@ class SurveyListTab extends ConsumerStatefulWidget {
 }
 
 class _SurveyListTabState extends ConsumerState<SurveyListTab> {
+  final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedStatus = 'all';
+  String _selectedTimeline = 'all';
+
+  bool get _hasActiveFilter =>
+      _selectedStatus != 'all' || _selectedTimeline != 'all';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  bool matchesFilter(Survey survey) {
+    final query = _searchController.text.trim().toLowerCase();
+    final status = survey.status.toLowerCase().trim();
+    final code = survey.id.length >= 8
+        ? survey.id.substring(0, 8).toLowerCase()
+        : survey.id.toLowerCase();
+
+    // 1. Search Match
+    final matchesSearch = query.isEmpty ||
+        survey.title.toLowerCase().contains(query) ||
+        survey.description.toLowerCase().contains(query) ||
+        status.contains(query) ||
+        code.contains(query);
+
+    // 2. Status Match (Note: 'closed' matches both 'closed' and 'inactive')
+    final isClosedOrInactive = (status == 'closed' || status == 'inactive');
+    final matchesStatus = (_selectedStatus == 'all') ||
+        ((_selectedStatus == 'closed' || _selectedStatus == 'inactive') &&
+            isClosedOrInactive) ||
+        (status == _selectedStatus);
+
+    // 3. Timeline Match
+    final now = DateTime.now();
+    final start = survey.startDate ?? now;
+    final end = survey.endDate ?? now;
+    String timelineState = 'currently_open';
+    if (start.isAfter(now)) {
+      timelineState = 'upcoming';
+    } else if (end.isBefore(now)) {
+      timelineState = 'ended';
+    }
+    final matchesTimeline =
+        (_selectedTimeline == 'all') || (timelineState == _selectedTimeline);
+
+    return matchesSearch && matchesStatus && matchesTimeline;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,48 +79,59 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
           // Calculate Stats
           final totalSurveys = surveys.length;
           final activeSurveys = surveys
-              .where((s) => s.status == 'active')
+              .where((s) => s.status.toLowerCase().trim() == 'active')
               .length;
-          final draftSurveys = surveys
-              .where((s) => s.status == 'draft' || s.status == 'closed')
-              .length;
+          final draftSurveys = surveys.where((s) {
+            final st = s.status.toLowerCase().trim();
+            return st == 'draft' || st == 'closed' || st == 'inactive';
+          }).length;
           final totalRespondents = surveys.fold<int>(
             0,
             (sum, s) => sum + s.respondentsCount,
           );
 
-          // Filter
-          final filteredSurveys = surveys
-              .where(
-                (s) =>
-                    s.title.toLowerCase().contains(_searchQuery.toLowerCase()),
-              )
-              .toList();
+          // Combined Filter (Search + Status + Timeline)
+          final filteredSurveys = surveys.where(matchesFilter).toList();
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(context),
-                SizedBox(height: 24),
+                const SizedBox(height: 16),
                 _buildStatsCards(
                   total: totalSurveys,
                   active: activeSurveys,
                   respondents: totalRespondents,
                   drafts: draftSurveys,
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 16),
                 _buildSearchBar(),
-                SizedBox(height: 16),
-                _buildMainTable(filteredSurveys, ref, context),
-                SizedBox(height: 32),
-                _buildLivePreviewSection(filteredSurveys),
+                if (_hasActiveFilter) ...[
+                  const SizedBox(height: 10),
+                  _buildActiveFilterIndicatorRow(),
+                ],
+                const SizedBox(height: 12),
+                _buildMainTable(
+                  filteredSurveys,
+                  ref,
+                  context,
+                  totalSurveysCount: totalSurveys,
+                ),
+                const SizedBox(height: 24),
+                _buildLivePreviewSection(
+                  filteredSurveys,
+                  totalSurveysCount: totalSurveys,
+                ),
               ],
             ),
           );
         },
-        loading: () => Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(
           child: Text(
             'Error: $err',
@@ -92,42 +152,64 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Cooperative Member Survey',
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Cooperative Member Survey',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: 4),
-              Text(
-                'Manage and analyze member feedback surveys',
-                style: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.color?.withOpacity(0.6),
-                  fontSize: 14,
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Manage member feedback surveys',
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.75),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
-        SizedBox(width: 16),
-        ElevatedButton.icon(
+        const SizedBox(width: 10),
+        ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFC042FF),
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           onPressed: () => _showCreateSurveyModal(context),
-          icon: Icon(Icons.add, size: 18),
-          label: Text('Create New Survey'),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, size: 16),
+              SizedBox(width: 4),
+              Text(
+                'Create New Survey',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -148,81 +230,724 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
   }
 
   Widget _buildSearchBar() {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
+    const cyanAccent = Color(0xFF00C2A8);
+    final hasFilter = _hasActiveFilter;
+
+    final Widget searchTextField = Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF162032),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.15),
+        ),
+      ),
+      child: TextField(
+        controller: _searchController,
+        maxLength: 100,
+        style: TextStyle(
+          color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white,
+          fontSize: 14,
+        ),
+        onChanged: (val) => setState(() => _searchQuery = val),
+        decoration: InputDecoration(
+          counterText: '',
+          hintText: 'Search surveys by title...',
+          hintStyle: TextStyle(
+            color: (Theme.of(context).textTheme.bodyMedium?.color ??
+                    Colors.white)
+                .withValues(alpha: 0.45),
+            fontSize: 13.5,
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: (Theme.of(context).textTheme.bodyMedium?.color ??
+                    Colors.white)
+                .withValues(alpha: 0.5),
+            size: 20,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  tooltip: 'Clear search',
+                  icon: Icon(
+                    Icons.clear,
+                    size: 18,
+                    color: (Theme.of(context).textTheme.bodyMedium?.color ??
+                            Colors.white)
+                        .withValues(alpha: 0.65),
+                  ),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+        ),
+      ),
+    );
+
+    final Widget filterIconButton = SizedBox(
+      width: 48,
+      height: 48,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () => _showFilterBottomSheet(context),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: hasFilter
+                  ? cyanAccent.withValues(alpha: 0.15)
+                  : const Color(0xFF162032),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white10),
+              border: Border.all(
+                color: hasFilter
+                    ? cyanAccent
+                    : Colors.white.withValues(alpha: 0.15),
+                width: hasFilter ? 1.5 : 1.0,
+              ),
             ),
-            child: TextField(
-              style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
-              onChanged: (val) => setState(() => _searchQuery = val),
-              decoration: InputDecoration(
-                hintText: 'Search surveys by title...',
-                hintStyle: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.color?.withOpacity(0.38),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.filter_list,
+                  color: hasFilter
+                      ? cyanAccent
+                      : (Theme.of(context).textTheme.bodyLarge?.color ??
+                              Colors.white)
+                          .withValues(alpha: 0.85),
+                  size: 22,
                 ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.color?.withOpacity(0.38),
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 14),
-              ),
+                if (hasFilter)
+                  Positioned(
+                    top: 9,
+                    right: 9,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: cyanAccent,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: cyanAccent.withValues(alpha: 0.6),
+                            blurRadius: 4,
+                            spreadRadius: 0.5,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
-        SizedBox(width: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white10),
+      ),
+    );
+
+    return Row(
+      children: [
+        Expanded(child: searchTextField),
+        const SizedBox(width: 10),
+        filterIconButton,
+      ],
+    );
+  }
+
+  String _statusFilterLabel(String status) {
+    switch (status) {
+      case 'active':
+        return 'Status: Active';
+      case 'draft':
+        return 'Status: Draft';
+      case 'closed':
+      case 'inactive':
+        return 'Status: Closed / Inactive';
+      default:
+        return 'All Surveys';
+    }
+  }
+
+  String _timelineFilterLabel(String timeline) {
+    switch (timeline) {
+      case 'currently_open':
+        return 'Schedule: Currently Open';
+      case 'upcoming':
+        return 'Schedule: Upcoming';
+      case 'ended':
+        return 'Schedule: Ended';
+      default:
+        return 'All Timelines';
+    }
+  }
+
+  Widget _buildActiveFilterIndicatorRow() {
+    const cyanAccent = Color(0xFF00C2A8);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (_selectedStatus != 'all')
+          _buildActiveFilterBadge(
+            label: _statusFilterLabel(_selectedStatus),
+            onRemove: () => setState(() => _selectedStatus = 'all'),
           ),
-          child: IconButton(
-            icon: Icon(
-              Icons.filter_list,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+        if (_selectedTimeline != 'all')
+          _buildActiveFilterBadge(
+            label: _timelineFilterLabel(_selectedTimeline),
+            onRemove: () => setState(() => _selectedTimeline = 'all'),
+          ),
+        InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () {
+            setState(() {
+              _selectedStatus = 'all';
+              _selectedTimeline = 'all';
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+            child: Text(
+              'Reset All',
+              style: TextStyle(
+                color: cyanAccent.withValues(alpha: 0.9),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            onPressed: () {},
           ),
         ),
       ],
     );
   }
 
+  Widget _buildActiveFilterBadge({
+    required String label,
+    required VoidCallback onRemove,
+  }) {
+    const cyanAccent = Color(0xFF00C2A8);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: cyanAccent.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cyanAccent.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.filter_alt_outlined, size: 13, color: cyanAccent),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: cyanAccent,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(Icons.close, size: 14, color: cyanAccent),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFilterBottomSheet(BuildContext context) {
+    String tempStatus = _selectedStatus;
+    String tempTimeline = _selectedTimeline;
+    const cyanAccent = Color(0xFF00C2A8);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF0B132B), Color(0xFF1C2541)],
+                      ),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(22),
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.14),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 24,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Drag handle pill
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.24),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Header: Slider/Filter icon + "Filter Options" + Close (x) button
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: cyanAccent.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: cyanAccent.withValues(alpha: 0.4),
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.tune_rounded,
+                                      color: cyanAccent,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Flexible(
+                                    child: Text(
+                                      'Filter Options',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Close',
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white70,
+                                size: 22,
+                              ),
+                              onPressed: () => Navigator.pop(sheetContext),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Divider(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          height: 1,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Group 1: Survey Status (statusFilter)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.layers_outlined,
+                              size: 16,
+                              color: cyanAccent,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'SURVEY STATUS',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFilterOptionTile(
+                          title: 'All Surveys',
+                          subtitle: 'Default — Show all survey statuses',
+                          icon: Icons.all_inbox_rounded,
+                          isSelected: tempStatus == 'all',
+                          onTap: () => setModalState(() => tempStatus = 'all'),
+                        ),
+                        _buildFilterOptionTile(
+                          title: 'Active',
+                          subtitle: 'Open to members',
+                          icon: Icons.check_circle_outline_rounded,
+                          isSelected: tempStatus == 'active',
+                          onTap: () =>
+                              setModalState(() => tempStatus = 'active'),
+                        ),
+                        _buildFilterOptionTile(
+                          title: 'Draft',
+                          subtitle: 'Unpublished',
+                          icon: Icons.edit_note_rounded,
+                          isSelected: tempStatus == 'draft',
+                          onTap: () =>
+                              setModalState(() => tempStatus = 'draft'),
+                        ),
+                        _buildFilterOptionTile(
+                          title: 'Closed / Inactive',
+                          subtitle: 'Closed or inactive surveys',
+                          icon: Icons.lock_outline_rounded,
+                          isSelected:
+                              tempStatus == 'closed' || tempStatus == 'inactive',
+                          onTap: () =>
+                              setModalState(() => tempStatus = 'closed'),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Group 2: Schedule / Timeline Window (timelineFilter)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.schedule_rounded,
+                              size: 16,
+                              color: cyanAccent,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'SCHEDULE / TIMELINE WINDOW',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        _buildFilterOptionTile(
+                          title: 'All Timelines',
+                          subtitle: 'Default — Any schedule window',
+                          icon: Icons.calendar_month_rounded,
+                          isSelected: tempTimeline == 'all',
+                          onTap: () =>
+                              setModalState(() => tempTimeline = 'all'),
+                        ),
+                        _buildFilterOptionTile(
+                          title: 'Currently Open (Within Schedule)',
+                          subtitle: 'Active window (startDate <= now <= endDate)',
+                          icon: Icons.event_available_rounded,
+                          isSelected: tempTimeline == 'currently_open',
+                          onTap: () => setModalState(
+                            () => tempTimeline = 'currently_open',
+                          ),
+                        ),
+                        _buildFilterOptionTile(
+                          title: 'Upcoming / Scheduled',
+                          subtitle: 'Scheduled for future (startDate > now)',
+                          icon: Icons.upcoming_rounded,
+                          isSelected: tempTimeline == 'upcoming',
+                          onTap: () =>
+                              setModalState(() => tempTimeline = 'upcoming'),
+                        ),
+                        _buildFilterOptionTile(
+                          title: 'Ended / Expired',
+                          subtitle: 'Past closing date (endDate < now)',
+                          icon: Icons.event_busy_rounded,
+                          isSelected: tempTimeline == 'ended',
+                          onTap: () =>
+                              setModalState(() => tempTimeline = 'ended'),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Footer Action Buttons: Reset + Apply Filters
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.25),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 13,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  setModalState(() {
+                                    tempStatus = 'all';
+                                    tempTimeline = 'all';
+                                  });
+                                  setState(() {
+                                    _selectedStatus = 'all';
+                                    _selectedTimeline = 'all';
+                                  });
+                                },
+                                child: const Text(
+                                  'Reset',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: cyanAccent,
+                                  foregroundColor: const Color(0xFF0B132B),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 13,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedStatus = tempStatus;
+                                    _selectedTimeline = tempTimeline;
+                                  });
+                                  Navigator.pop(sheetContext);
+                                },
+                                child: const Text(
+                                  'Apply Filters',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterOptionTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    const cyanAccent = Color(0xFF00C2A8);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? cyanAccent.withValues(alpha: 0.15)
+                  : const Color(0xFF162032).withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? cyanAccent
+                    : Colors.white.withValues(alpha: 0.12),
+                width: isSelected ? 1.5 : 1.0,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 19,
+                  color: isSelected ? cyanAccent : Colors.white70,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: isSelected ? cyanAccent : Colors.white,
+                          fontSize: 13.5,
+                          fontWeight:
+                              isSelected ? FontWeight.w800 : FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.58),
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  isSelected
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.radio_button_off_rounded,
+                  size: 19,
+                  color: isSelected ? cyanAccent : Colors.white38,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyFilterResultCard({required int totalSurveysCount}) {
+    final isFiltering =
+        _searchController.text.trim().isNotEmpty || _hasActiveFilter;
+    const cyanAccent = Color(0xFF00C2A8);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isFiltering
+                ? Icons.search_off_rounded
+                : Icons.assignment_late_outlined,
+            size: 38,
+            color: cyanAccent,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            isFiltering && totalSurveysCount > 0
+                ? 'No Matching Surveys Found'
+                : 'No surveys found.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isFiltering && totalSurveysCount > 0
+                ? 'No surveys match your current search query or selected filter options.'
+                : 'Create a new survey to begin collecting feedback from members.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+              fontSize: 12.5,
+            ),
+          ),
+          if (isFiltering) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: cyanAccent,
+                side: const BorderSide(color: cyanAccent),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                  _selectedStatus = 'all';
+                  _selectedTimeline = 'all';
+                });
+              },
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text(
+                'Reset Search & Filters',
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildMainTable(
     List<Survey> surveys,
     WidgetRef ref,
-    BuildContext context,
-  ) {
+    BuildContext context, {
+    int totalSurveysCount = 0,
+  }) {
     if (surveys.isEmpty) {
-      return Center(
-        child: Text(
-          'No surveys found.',
-          style: TextStyle(
-            color: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.color?.withOpacity(0.54),
-          ),
-        ),
-      );
+      return _buildEmptyFilterResultCard(totalSurveysCount: totalSurveysCount);
     }
     return Column(
       children: surveys
           .map(
             (s) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
@@ -233,6 +958,7 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Text(
@@ -240,34 +966,39 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).textTheme.bodyLarge?.color,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       _buildStatusChip(s.status),
                     ],
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildSchedule(s.startDate, s.endDate),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          _buildBadge(
-                            Icons.list,
-                            '${s.questionsCount}',
-                            Colors.blue,
-                          ),
-                          SizedBox(width: 8),
-                          _buildBadge(
-                            Icons.people,
-                            '${s.respondentsCount}',
-                            Colors.purple,
-                          ),
-                        ],
+                      Flexible(
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            _buildBadge(
+                              Icons.list,
+                              '${s.questionsCount}',
+                              Colors.blue,
+                            ),
+                            _buildBadge(
+                              Icons.people,
+                              '${s.respondentsCount}',
+                              Colors.purple,
+                            ),
+                          ],
+                        ),
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -309,55 +1040,55 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
     );
   }
 
-  Widget _buildLivePreviewSection(List<Survey> surveys) {
+  Widget _buildLivePreviewSection(
+    List<Survey> surveys, {
+    int totalSurveysCount = 0,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(Icons.visibility, color: Colors.pinkAccent),
-            SizedBox(width: 8),
-            Text(
-              'Survey Live Preview',
-              style: TextStyle(
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            const Icon(Icons.visibility, color: Colors.pinkAccent, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Survey Live Preview',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           'Real-time overview of active and draft surveys with live schedule status, respondent counts, and questionnaire details',
           style: TextStyle(
             color: Theme.of(
               context,
-            ).textTheme.bodyMedium?.color?.withOpacity(0.6),
+            ).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 12),
         _buildSearchBar(), // Reusing search bar style for layout mirroring
-        SizedBox(height: 16),
+        const SizedBox(height: 12),
         if (surveys.isEmpty)
-          Center(
-            child: Text(
-              'No surveys found.',
-              style: TextStyle(
-                color: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.color?.withOpacity(0.54),
-              ),
-            ),
-          )
+          _buildEmptyFilterResultCard(totalSurveysCount: totalSurveysCount)
         else
           Column(
             children: surveys
                 .map(
                   (s) => Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
@@ -367,30 +1098,39 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [_buildStatusChip(s.status)],
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                s.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
+                                  fontSize: 15,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildStatusChip(s.status),
+                          ],
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          s.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         _buildSchedule(s.startDate, s.endDate),
-                        SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
                           children: [
                             _buildBadge(
                               Icons.list,
                               '${s.questionsCount} Questions',
                               Colors.teal,
                             ),
-                            SizedBox(width: 12),
                             _buildBadge(
                               Icons.people,
                               '${s.respondentsCount} Submissions',
@@ -409,13 +1149,15 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
   }
 
   Widget _buildStatusChip(String status) {
+    final normalized = status.toLowerCase().trim();
     Color color;
-    if (status == 'active')
+    if (normalized == 'active') {
       color = Colors.greenAccent;
-    else if (status == 'closed')
+    } else if (normalized == 'closed' || normalized == 'inactive') {
       color = Colors.redAccent;
-    else
+    } else {
       color = Colors.orangeAccent;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -428,7 +1170,7 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.check_circle, size: 12, color: color),
-          SizedBox(width: 4),
+          const SizedBox(width: 4),
           Text(
             status.capitalize(),
             style: TextStyle(color: color, fontSize: 12),
@@ -439,28 +1181,35 @@ class _SurveyListTabState extends ConsumerState<SurveyListTab> {
   }
 
   Widget _buildSchedule(DateTime? start, DateTime? end) {
-    if (start == null) return Text('No schedule');
+    if (start == null) return const Text('No schedule');
     final df = DateFormat('MMM dd, yyyy, h:mm a');
     return Row(
       children: [
-        Icon(Icons.calendar_month, color: Colors.pinkAccent, size: 16),
-        SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(df.format(start), style: TextStyle(fontSize: 12)),
-            if (end != null)
+        const Icon(Icons.calendar_month, color: Colors.pinkAccent, size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               Text(
-                'to ${df.format(end)}',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.color?.withOpacity(0.54),
-                ),
+                df.format(start),
+                style: const TextStyle(fontSize: 12),
+                overflow: TextOverflow.ellipsis,
               ),
-          ],
+              if (end != null)
+                Text(
+                  'to ${df.format(end)}',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.54),
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );

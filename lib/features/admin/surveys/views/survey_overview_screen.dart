@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:cooperative_member_app/core/models/survey.dart';
 import 'package:cooperative_member_app/features/admin/surveys/repositories/survey_repository.dart';
+import 'package:cooperative_member_app/features/admin/surveys/views/survey_list_tab.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cooperative_member_app/core/widgets/space_app_bar.dart';
 
@@ -17,11 +18,8 @@ class SurveyOverviewScreen extends ConsumerStatefulWidget {
 class _SurveyOverviewScreenState extends ConsumerState<SurveyOverviewScreen> {
   @override
   Widget build(BuildContext context) {
-    final surveyRepo = ref.watch(surveyRepositoryProvider);
-
     return Scaffold(
       appBar: SpaceAppBar(
-        title: const Text('Survey Management'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -29,32 +27,7 @@ class _SurveyOverviewScreenState extends ConsumerState<SurveyOverviewScreen> {
           ),
         ],
       ),
-      body: StreamBuilder<List<Survey>>(
-        stream: surveyRepo.watchSurveys(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final surveys = snapshot.data ?? [];
-
-          if (surveys.isEmpty) {
-            return const Center(child: Text('No surveys found. Create one!'));
-          }
-
-          return ListView.builder(
-            itemCount: surveys.length,
-            padding: const EdgeInsets.all(16),
-            itemBuilder: (context, index) {
-              final survey = surveys[index];
-              return SurveyCard(survey: survey, repository: surveyRepo);
-            },
-          );
-        },
-      ),
+      body: const SurveyListTab(),
     );
   }
 

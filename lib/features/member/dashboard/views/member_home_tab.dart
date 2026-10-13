@@ -64,7 +64,9 @@ class MemberHomeTab extends ConsumerWidget {
             description: 'Edit personal, contact, spouse, and children information.',
             actionText: 'Update Now',
             primaryColor: primaryColor,
-            onTap: () {},
+            onTap: () {
+              GoRouter.of(context).go('/member/update-info');
+            },
           ),
           const SizedBox(height: 16),
           _buildActionCard(
@@ -86,7 +88,9 @@ class MemberHomeTab extends ConsumerWidget {
             description: 'Participate in active cooperative surveys and share feedback.',
             actionText: 'Take Survey',
             primaryColor: primaryColor,
-            onTap: () {},
+            onTap: () {
+              GoRouter.of(context).go('/member/surveys');
+            },
           ),
           const SizedBox(height: 16),
           _buildActionCard(
@@ -96,7 +100,9 @@ class MemberHomeTab extends ConsumerWidget {
             description: 'Update your account security password.',
             actionText: 'Change Password',
             primaryColor: primaryColor,
-            onTap: () {},
+            onTap: () {
+              GoRouter.of(context).push('/member/change-password');
+            },
           ),
           const SizedBox(height: 24),
         ],
@@ -112,7 +118,6 @@ class MemberHomeTab extends ConsumerWidget {
     final String displayName = '${member.firstName} ${member.lastName}'.trim();
     final String accNumber = member.accountNumber.isNotEmpty ? member.accountNumber : 'UNKNOWN';
     final String? photoUrl = member.photoUrl;
-    final bool isVerified = member.isVerified;
     
     return Container(
       width: double.infinity,
@@ -269,15 +274,15 @@ class MemberHomeTab extends ConsumerWidget {
                     // Verified Badge
                     Row(
                       children: [
-                        Icon(
-                          isVerified ? Icons.shield : Icons.shield_outlined,
-                          color: isVerified ? Colors.green : Colors.grey,
+                        const Icon(
+                          Icons.shield,
+                          color: Colors.green,
                           size: 14,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            isVerified ? 'Verified Member' : 'Unverified Member',
+                            'Verified Member',
                             style: TextStyle(
                               color: subtextColor,
                               fontSize: 12,

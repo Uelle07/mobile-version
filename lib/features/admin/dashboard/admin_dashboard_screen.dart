@@ -32,7 +32,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return Scaffold(
       appBar: SpaceAppBar(
-        title: const Text('Admin Dashboard'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

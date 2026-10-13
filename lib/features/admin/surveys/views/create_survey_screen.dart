@@ -15,7 +15,7 @@ class _CreateSurveyScreenState extends ConsumerState<CreateSurveyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SpaceAppBar(title: const Text('Create Survey')),
+      appBar: const SpaceAppBar(),
       body: Form(
         key: _formKey,
         child: ListView(

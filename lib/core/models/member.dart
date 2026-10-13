@@ -16,7 +16,7 @@ abstract class Member with _$Member {
     @JsonKey(name: 'contact_number') String? phone,
     @JsonKey(name: 'passport_photo') String? photoUrl,
     @JsonKey(name: 'signature_photo') String? signatureUrl,
-    @JsonKey(name: 'is_verified') @Default(false) bool isVerified,
+    @JsonKey(name: 'is_verified') @Default(true) bool isVerified,
     @JsonKey(name: 'account_status') @Default('Active') String status,
     @JsonKey(name: 'civil_status') String? civilStatus,
     @JsonKey(name: 'sex') String? gender,
